@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure seu Agendamento - Super Simples!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto max-w-md p-4">
+        <!-- Header -->
+        <div class="text-center py-8">
+            <h1 class="text-3xl font-bold text-gray-800">
+                📅 Agendamento WhatsApp
+            </h1>
+            <p class="text-gray-600 mt-2">
+                Configure em 2 minutos e comece a receber agendamentos!
+            </p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form id="setupForm">
+                <!-- Nome -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        Nome do seu negócio
+                    </label>
+                    <input 
+                        type="text" 
+                        id="businessName"
+                        placeholder="Barbearia do João"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                        required
+                    >
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        WhatsApp Business
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="whatsapp"
+                        placeholder="11999999999"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                        required
+                    >
+                    <p class="text-sm text-gray-500 mt-1">
+                        Apenas números, com DDD
+                    </p>
+                </div>
+
+                <!-- Horário de Funcionamento -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        Horário de Funcionamento
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm text-gray-600">Abertura</label>
+                            <select id="openTime" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="8">08:00</option>
+                                <option value="9" selected>09:00</option>
+                                <option value="10">10:00</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Fechamento</label>
+                            <select id="closeTime" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="17">17:00</option>
+                                <option value="18" selected>18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Duração do Atendimento -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        Tempo médio de atendimento
+                    </label>
+                    <select id="serviceDuration" class="w-full px-4 py-2 border rounded-lg">
+                        <option value="30" selected>30 minutos</option>
+                        <option value="45">45 minutos</option>
+                        <option value="60">1 hora</option>
+                    </select>
+                </div>
+
+                <!-- Botão -->
+                <button 
+                    type="submit"
+                    class="w-full bg-green-500 text-white font-medium py-3 rounded-lg hover:bg-green-600 transition duration-200"
+                >
+                    Criar Meu Link de Agendamento 🚀
+                </button>
+            </form>
+        </div>
+
+        <!-- Resultado -->
+        <div id="result" class="hidden mt-6 bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                ✅ Tudo pronto!
+            </h3>
+            <p class="text-gray-600 mb-4">
+                Seu link de agendamento:
+            </p>
+            <div class="bg-gray-100 p-3 rounded-lg break-all">
+                <code id="generatedLink" class="text-blue-600"></code>
+            </div>
+            <button 
+                onclick="copyLink()"
+                class="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+            >
+                📋 Copiar Link
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Formulário de setup
+        document.getElementById('setupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Pega os dados do formulário
+            const formData = {
+                businessName: document.getElementById('businessName').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                openTime: document.getElementById('openTime').value,
+                closeTime: document.getElementById('closeTime').value,
+                serviceDuration: document.getElementById('serviceDuration').value
+            };
+    
+            console.log('Enviando dados:', formData);
+    
+            try {
+                // Envia para o servidor
+                const response = await fetch('http://localhost:3000/api/barbers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+    
+                const result = await response.json();
+                console.log('Resposta do servidor:', result);
+    
+                if (result.success) {
+                    // Mostra o resultado
+                    const link = result.data.bookingUrl;
+                    document.getElementById('generatedLink').textContent = link;
+                    document.getElementById('result').classList.remove('hidden');
+                    
+                    // Esconde o formulário
+                    document.getElementById('setupForm').style.display = 'none';
+                    
+                    console.log('✅ Barbeiro salvo no Firebase!');
+                    alert('Cadastro realizado com sucesso!');
+                } else {
+                    alert('Erro ao criar cadastro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor.');
+            }
+        });
+    
+        // Função para copiar o link
+        function copyLink() {
+            const link = document.getElementById('generatedLink').textContent;
+            navigator.clipboard.writeText(link);
+            alert('Link copiado! 📋');
+        }
+    </script>
+</body>
+</html>
