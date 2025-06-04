@@ -28,6 +28,11 @@ const frontendPath = path.resolve(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 console.log('📁 Servindo arquivos de:', frontendPath);
 
+// Rota específica para a raiz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'setup.html'));
+});
+
 // ROTAS DA API
 
 // Teste simples
