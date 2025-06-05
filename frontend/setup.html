@@ -9,7 +9,7 @@
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto max-w-4xl p-4">
         <!-- Header com progresso -->
-        <div class="text-center py-8">
+        <div id="headerSection" class="text-center py-8">
             <h1 class="text-3xl font-bold text-gray-800">
                 ✂️ Configure sua Barbearia
             </h1>
@@ -27,7 +27,7 @@
         </div>
 
         <!-- Formulário com steps -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div id="formSection" class="bg-white rounded-lg shadow-md overflow-hidden">
             <form id="setupForm" class="space-y-0">
                 
                 <!-- Step 1: Informações Básicas -->
@@ -349,7 +349,7 @@
         </div>
 
         <!-- Navegação -->
-        <div class="flex justify-between mt-6">
+        <div id="navigationSection" class="flex justify-between mt-6">
             <button 
                 type="button"
                 id="prevBtn"
@@ -636,9 +636,7 @@
             document.getElementById('configSummary').innerHTML = summary;
         }
 
-        // Submissão do formulário
-       // ADICIONE estes logs no início da função submitForm() no seu setup.html
-
+        // Submissão do formulário - VERSÃO CORRIGIDA
         async function submitForm() {
             console.log('🚀 INICIANDO submitForm()');
             
@@ -685,12 +683,29 @@
                     console.log('✅ SUCESSO! Dados:', result.data);
                     console.log('🔗 Link gerado:', result.data.bookingUrl);
                     
+                    // Atualizar elementos de resultado
                     document.getElementById('generatedLink').textContent = result.data.bookingUrl;
                     document.getElementById('panelLink').href = `/painel.html?slug=${result.data.slug}`;
+                    
+                    // CORRIGIDO: Mostrar resultado e esconder formulário corretamente
                     document.getElementById('result').classList.remove('hidden');
-                    document.querySelector('.container').classList.add('hidden');
+                    
+                    // Esconder seções específicas (não o container inteiro)
+                    document.getElementById('headerSection').style.display = 'none';
+                    document.getElementById('formSection').style.display = 'none';
+                    document.getElementById('navigationSection').style.display = 'none';
                     
                     console.log('🎯 Interface atualizada!');
+                    
+                    // Scroll para o resultado
+                    document.getElementById('result').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                    
+                    // Atualizar título da página
+                    document.title = `Sistema Criado - ${result.data.businessName}`;
+                    
                 } else {
                     console.error('❌ Erro do servidor:', result.error);
                     alert('Erro ao criar sistema: ' + (result.error || 'Erro desconhecido'));
