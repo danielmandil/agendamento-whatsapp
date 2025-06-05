@@ -150,34 +150,40 @@
             document.getElementById('noBookings').classList.add('hidden');
             
             try {
-                // Por enquanto, vamos simular dados
-                // TODO: Implementar rota real no backend
                 const dateFilter = document.getElementById('dateFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
                 
-                // Simula agendamentos
-                allBookings = [
-                    {
-                        customerName: 'João Silva',
-                        customerPhone: '11999999999',
-                        date: new Date().toISOString().split('T')[0],
-                        time: '14:00',
-                        status: 'confirmed'
-                    },
-                    {
-                        customerName: 'Pedro Santos',
-                        customerPhone: '11888888888',
-                        date: new Date().toISOString().split('T')[0],
-                        time: '15:00',
-                        status: 'confirmed'
-                    }
-                ];
+                // Monta a URL com os filtros
+                let url = `/api/barbers/${barberSlug}/bookings`;
+                const params = new URLSearchParams();
                 
-                displayBookings(allBookings);
-                updateStatistics(allBookings);
+                if (dateFilter) {
+                    params.append('date', dateFilter);
+                }
+                
+                if (statusFilter) {
+                    params.append('status', statusFilter);
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                // Busca os dados REAIS do servidor
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allBookings = result.data;
+                    displayBookings(allBookings);
+                    updateStatistics(allBookings);
+                } else {
+                    throw new Error(result.error || 'Erro ao buscar agendamentos');
+                }
                 
             } catch (error) {
                 console.error('Erro ao carregar agendamentos:', error);
-                alert('Erro ao carregar agendamentos');
+                alert('Erro ao carregar agendamentos: ' + error.message);
             } finally {
                 document.getElementById('loading').classList.add('hidden');
             }

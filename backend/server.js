@@ -247,6 +247,8 @@ app.get('/api/barbers/:slug/bookings', async (req, res) => {
         const { slug } = req.params;
         const { date, status } = req.query;
         
+        console.log(`📋 Buscando agendamentos para: ${slug}`);
+        
         let query = db.collection('bookings').where('barberSlug', '==', slug);
         
         if (date) {
@@ -257,12 +259,14 @@ app.get('/api/barbers/:slug/bookings', async (req, res) => {
             query = query.where('status', '==', status);
         }
         
-        const snapshot = await query.orderBy('date', 'desc').orderBy('time', 'desc').get();
+        const snapshot = await query.get();
         
         const bookings = [];
         snapshot.forEach(doc => {
             bookings.push({ id: doc.id, ...doc.data() });
         });
+        
+        console.log(`✅ ${bookings.length} agendamentos encontrados`);
         
         res.json({
             success: true,
@@ -270,7 +274,7 @@ app.get('/api/barbers/:slug/bookings', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Erro ao buscar agendamentos:', error);
+        console.error('❌ Erro ao buscar agendamentos:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
