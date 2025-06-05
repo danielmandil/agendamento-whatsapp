@@ -3,178 +3,697 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configure seu Agendamento - Super Simples!</title>
+    <title>Configure sua Barbearia - Sistema Completo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto max-w-md p-4">
-        <!-- Header -->
+    <div class="container mx-auto max-w-4xl p-4">
+        <!-- Header com progresso -->
         <div class="text-center py-8">
             <h1 class="text-3xl font-bold text-gray-800">
-                📅 Agendamento WhatsApp
+                ✂️ Configure sua Barbearia
             </h1>
             <p class="text-gray-600 mt-2">
-                Configure em 2 minutos e comece a receber agendamentos!
+                Setup completo em 6 passos simples
+            </p>
+            
+            <!-- Barra de progresso -->
+            <div class="mt-4 w-full bg-gray-200 rounded-full h-2">
+                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p class="text-sm text-gray-500 mt-1">
+                <span id="currentStep">1</span> de 6 - <span id="stepDescription">Informações básicas</span>
             </p>
         </div>
 
-        <!-- Formulário -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <form id="setupForm">
-                <!-- Nome -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">
-                        Nome do seu negócio
-                    </label>
-                    <input 
-                        type="text" 
-                        id="businessName"
-                        placeholder="Barbearia do João"
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                        required
-                    >
-                </div>
-
-                <!-- WhatsApp -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">
-                        WhatsApp Business
-                    </label>
-                    <input 
-                        type="tel" 
-                        id="whatsapp"
-                        placeholder="11999999999"
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                        required
-                    >
-                    <p class="text-sm text-gray-500 mt-1">
-                        Apenas números, com DDD
-                    </p>
-                </div>
-
-                <!-- Horário de Funcionamento -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-2">
-                        Horário de Funcionamento
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
+        <!-- Formulário com steps -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <form id="setupForm" class="space-y-0">
+                
+                <!-- Step 1: Informações Básicas -->
+                <div class="step-content p-6" data-step="1">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        1️⃣ Informações da sua Barbearia
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label class="text-sm text-gray-600">Abertura</label>
-                            <select id="openTime" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="8">08:00</option>
-                                <option value="9" selected>09:00</option>
-                                <option value="10">10:00</option>
-                            </select>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                Nome da Barbearia *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="businessName"
+                                placeholder="Barbearia Estilo Masculino"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required
+                            >
+                            <p class="text-xs text-gray-500 mt-1">Aparecerá no link e nas mensagens</p>
                         </div>
+                        
                         <div>
-                            <label class="text-sm text-gray-600">Fechamento</label>
-                            <select id="closeTime" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="17">17:00</option>
-                                <option value="18" selected>18:00</option>
-                                <option value="19">19:00</option>
-                                <option value="20">20:00</option>
-                            </select>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                WhatsApp Business *
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="whatsapp"
+                                placeholder="31999887766"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required
+                            >
+                            <p class="text-xs text-gray-500 mt-1">Apenas números, com DDD</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-medium mb-2">
+                            Endereço (opcional)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="address"
+                            placeholder="Rua das Flores, 123 - Centro, Belo Horizonte"
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Aparecerá nas confirmações de agendamento</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Dias de Funcionamento -->
+                <div class="step-content p-6 hidden" data-step="2">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        2️⃣ Quando sua barbearia funciona?
+                    </h2>
+                    
+                    <p class="text-gray-600 mb-4">
+                        Marque os dias em que você atende clientes
+                    </p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-1" class="day-checkbox" value="1" checked>
+                            <span class="font-medium">Segunda</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-2" class="day-checkbox" value="2" checked>
+                            <span class="font-medium">Terça</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-3" class="day-checkbox" value="3" checked>
+                            <span class="font-medium">Quarta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-4" class="day-checkbox" value="4" checked>
+                            <span class="font-medium">Quinta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-5" class="day-checkbox" value="5" checked>
+                            <span class="font-medium">Sexta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-6" class="day-checkbox" value="6" checked>
+                            <span class="font-medium">Sábado</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="day-0" class="day-checkbox" value="0">
+                            <span class="font-medium">Domingo</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Configuração rápida -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm font-medium text-blue-800 mb-2">⚡ Configuração rápida:</p>
+                        <div class="space-x-2">
+                            <button type="button" onclick="setWorkingDays([1,2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sáb</button>
+                            <button type="button" onclick="setWorkingDays([1,2,3,4,5])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sex</button>
+                            <button type="button" onclick="setWorkingDays([2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Ter-Sáb</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Duração do Atendimento -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">
-                        Tempo médio de atendimento
-                    </label>
-                    <select id="serviceDuration" class="w-full px-4 py-2 border rounded-lg">
-                        <option value="30" selected>30 minutos</option>
-                        <option value="45">45 minutos</option>
-                        <option value="60">1 hora</option>
-                    </select>
+                <!-- Step 3: Horários -->
+                <div class="step-content p-6 hidden" data-step="3">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        3️⃣ Horários de funcionamento
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🌅 Hora de abertura
+                            </label>
+                            <select id="openTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="7">07:00</option>
+                                <option value="8" selected>08:00</option>
+                                <option value="9">09:00</option>
+                                <option value="10">10:00</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🌆 Hora de fechamento
+                            </label>
+                            <select id="closeTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="17">17:00</option>
+                                <option value="18" selected>18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                                <option value="21">21:00</option>
+                                <option value="22">22:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Horário de Almoço -->
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <label class="flex items-center space-x-2 mb-3">
+                            <input type="checkbox" id="hasLunchBreak" onchange="toggleLunchBreak()">
+                            <span class="font-medium">🍽️ Configurar pausa para almoço</span>
+                        </label>
+                        
+                        <div id="lunchBreakConfig" class="hidden grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Início da pausa</label>
+                                <select id="lunchStart" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="11:30">11:30</option>
+                                    <option value="12:00" selected>12:00</option>
+                                    <option value="12:30">12:30</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Fim da pausa</label>
+                                <select id="lunchEnd" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="13:00" selected>13:00</option>
+                                    <option value="13:30">13:30</option>
+                                    <option value="14:00">14:00</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Botão -->
-                <button 
-                    type="submit"
-                    class="w-full bg-green-500 text-white font-medium py-3 rounded-lg hover:bg-green-600 transition duration-200"
-                >
-                    Criar Meu Link de Agendamento 🚀
-                </button>
+                <!-- Step 4: Serviços -->
+                <div class="step-content p-6 hidden" data-step="4">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        4️⃣ Seus serviços e preços
+                    </h2>
+                    
+                    <p class="text-gray-600 mb-4">
+                        Configure os serviços que você oferece, quanto tempo demora cada um e o preço
+                    </p>
+                    
+                    <div id="servicesList" class="space-y-4 mb-6">
+                        <!-- Serviço padrão - Corte -->
+                        <div class="service-item p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">✂️ Serviço</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Corte masculino"
+                                        class="service-name w-full px-3 py-2 border rounded"
+                                        value="Corte masculino"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">⏱️ Tempo</label>
+                                    <select class="service-duration w-full px-3 py-2 border rounded">
+                                        <option value="20">20 min</option>
+                                        <option value="30" selected>30 min</option>
+                                        <option value="40">40 min</option>
+                                        <option value="45">45 min</option>
+                                        <option value="60">1 hora</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">💰 Preço</label>
+                                    <input 
+                                        type="number" 
+                                        placeholder="35.00"
+                                        class="service-price w-full px-3 py-2 border rounded"
+                                        step="0.01"
+                                        value="35.00"
+                                    >
+                                </div>
+                                <div class="flex items-end">
+                                    <button 
+                                        type="button"
+                                        onclick="removeService(this)"
+                                        class="text-red-600 hover:text-red-800 text-sm"
+                                        disabled
+                                    >
+                                        🗑️ Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões para adicionar serviços comuns -->
+                    <div class="mb-4">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Adicionar serviços comuns:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="addCommonService('Barba', 20, 25)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">🧔 Barba</button>
+                            <button type="button" onclick="addCommonService('Sobrancelha', 15, 15)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">👁️ Sobrancelha</button>
+                            <button type="button" onclick="addCommonService('Corte + Barba', 45, 55)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✂️🧔 Corte + Barba</button>
+                            <button type="button" onclick="addCommonService('Degradê', 40, 40)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✨ Degradê</button>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="button"
+                        onclick="addService()"
+                        class="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600"
+                    >
+                        ➕ Adicionar outro serviço personalizado
+                    </button>
+                </div>
+
+                <!-- Step 5: Configurações Avançadas -->
+                <div class="step-content p-6 hidden" data-step="5">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        5️⃣ Configurações de agendamento
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                ⏰ Com quanto tempo de antecedência podem agendar?
+                            </label>
+                            <select id="minAdvanceTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="0">Podem agendar na hora</option>
+                                <option value="1">Pelo menos 1 hora antes</option>
+                                <option value="2" selected>Pelo menos 2 horas antes</option>
+                                <option value="24">Pelo menos 1 dia antes</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Evita agendamentos de última hora</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🔢 Quantos clientes por dia no máximo?
+                            </label>
+                            <input 
+                                type="number" 
+                                id="maxBookingsPerDay"
+                                placeholder="0 = sem limite"
+                                class="w-full px-4 py-2 border rounded-lg"
+                                min="0"
+                                value="0"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">0 = sem limite (recomendado)</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                ⏳ Intervalo entre atendimentos
+                            </label>
+                            <select id="bufferTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="0">Sem intervalo</option>
+                                <option value="5">5 minutos</option>
+                                <option value="10" selected>10 minutos</option>
+                                <option value="15">15 minutos</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Tempo para limpeza entre clientes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Finalização -->
+                <div class="step-content p-6 hidden" data-step="6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        6️⃣ Quase pronto! 🎉
+                    </h2>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg mb-6">
+                        <h3 class="font-semibold text-green-800 mb-2">Resumo da sua configuração:</h3>
+                        <div id="configSummary" class="text-sm text-green-700 space-y-1">
+                            <!-- Será preenchido via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-blue-800 mb-2">📱 Como funciona:</h3>
+                        <ol class="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                            <li>Você receberá um link único para sua barbearia</li>
+                            <li>Compartilhe esse link com seus clientes</li>
+                            <li>Eles escolhem o serviço, data e horário</li>
+                            <li>Confirmação automática via WhatsApp</li>
+                            <li>Você acessa o painel para ver todos os agendamentos</li>
+                        </ol>
+                    </div>
+                </div>
             </form>
+        </div>
+
+        <!-- Navegação -->
+        <div class="flex justify-between mt-6">
+            <button 
+                type="button"
+                id="prevBtn"
+                onclick="changeStep(-1)"
+                class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+            >
+                ← Anterior
+            </button>
+            
+            <button 
+                type="button"
+                id="nextBtn"
+                onclick="changeStep(1)"
+                class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+                Próximo →
+            </button>
+            
+            <button 
+                type="button"
+                id="submitBtn"
+                onclick="submitForm()"
+                class="hidden px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+                🚀 Criar Sistema
+            </button>
         </div>
 
         <!-- Resultado -->
         <div id="result" class="hidden mt-6 bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                ✅ Tudo pronto!
-            </h3>
-            <p class="text-gray-600 mb-4">
-                Seu link de agendamento:
-            </p>
-            <div class="bg-gray-100 p-3 rounded-lg break-all">
-                <code id="generatedLink" class="text-blue-600"></code>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">✅</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                    Sistema criado com sucesso!
+                </h3>
+                <p class="text-gray-600">
+                    Sua barbearia já está pronta para receber agendamentos online
+                </p>
             </div>
-            <button 
-                onclick="copyLink()"
-                class="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-            >
-                📋 Copiar Link
-            </button>
+            
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    🔗 Link para seus clientes:
+                </label>
+                <div class="bg-white p-3 rounded border">
+                    <code id="generatedLink" class="text-blue-600 break-all"></code>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button 
+                    onclick="copyLink()"
+                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+                >
+                    📋 Copiar Link
+                </button>
+                <a 
+                    id="panelLink"
+                    href="#"
+                    target="_blank"
+                    class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 text-center"
+                >
+                    📊 Abrir Painel
+                </a>
+                <button 
+                    onclick="testBooking()"
+                    class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
+                >
+                    🧪 Testar Agendamento
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Formulário de setup
-        document.getElementById('setupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        let currentStep = 1;
+        let totalSteps = 6;
+        let blockedDates = [];
+
+        // Controle de steps
+        function changeStep(direction) {
+            if (direction === 1 && !validateCurrentStep()) {
+                return;
+            }
             
-            // Pega os dados do formulário
+            const newStep = currentStep + direction;
+            if (newStep < 1 || newStep > totalSteps) return;
+            
+            // Esconder step atual
+            document.querySelector(`[data-step="${currentStep}"]`).classList.add('hidden');
+            
+            // Mostrar novo step
+            document.querySelector(`[data-step="${newStep}"]`).classList.remove('hidden');
+            
+            currentStep = newStep;
+            updateUI();
+            
+            if (currentStep === 6) {
+                updateConfigSummary();
+            }
+        }
+
+        function updateUI() {
+            // Atualizar progresso
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentStep').textContent = currentStep;
+            
+            // Atualizar descrições
+            const descriptions = [
+                'Informações básicas',
+                'Dias de funcionamento', 
+                'Horários',
+                'Serviços e preços',
+                'Configurações',
+                'Finalizar'
+            ];
+            document.getElementById('stepDescription').textContent = descriptions[currentStep - 1];
+            
+            // Controlar botões
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'block';
+            document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+        }
+
+        function validateCurrentStep() {
+            switch(currentStep) {
+                case 1:
+                    const name = document.getElementById('businessName').value.trim();
+                    const whatsapp = document.getElementById('whatsapp').value.trim();
+                    if (!name || !whatsapp) {
+                        alert('Preencha o nome da barbearia e o WhatsApp');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    const selectedDays = document.querySelectorAll('.day-checkbox:checked');
+                    if (selectedDays.length === 0) {
+                        alert('Selecione pelo menos um dia de funcionamento');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    const services = collectServices();
+                    if (services.length === 0) {
+                        alert('Configure pelo menos um serviço');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        // Toggle configuração de almoço
+        function toggleLunchBreak() {
+            const checkbox = document.getElementById('hasLunchBreak');
+            const config = document.getElementById('lunchBreakConfig');
+            config.classList.toggle('hidden', !checkbox.checked);
+        }
+
+        // Configuração rápida de dias
+        function setWorkingDays(days) {
+            document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
+            days.forEach(day => {
+                document.getElementById(`day-${day}`).checked = true;
+            });
+        }
+
+        // Adicionar serviços
+        function addCommonService(name, duration, price) {
+            const servicesList = document.getElementById('servicesList');
+            const newService = createServiceElement(name, duration, price);
+            servicesList.appendChild(newService);
+        }
+
+        function addService() {
+            const servicesList = document.getElementById('servicesList');
+            const newService = createServiceElement('', 30, 0);
+            servicesList.appendChild(newService);
+        }
+
+        function createServiceElement(name = '', duration = 30, price = 0) {
+            const newService = document.createElement('div');
+            newService.className = 'service-item p-4 border rounded-lg';
+            newService.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">✂️ Serviço</label>
+                        <input 
+                            type="text" 
+                            placeholder="Nome do serviço"
+                            class="service-name w-full px-3 py-2 border rounded"
+                            value="${name}"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">⏱️ Tempo</label>
+                        <select class="service-duration w-full px-3 py-2 border rounded">
+                            <option value="15" ${duration === 15 ? 'selected' : ''}>15 min</option>
+                            <option value="20" ${duration === 20 ? 'selected' : ''}>20 min</option>
+                            <option value="30" ${duration === 30 ? 'selected' : ''}>30 min</option>
+                            <option value="40" ${duration === 40 ? 'selected' : ''}>40 min</option>
+                            <option value="45" ${duration === 45 ? 'selected' : ''}>45 min</option>
+                            <option value="60" ${duration === 60 ? 'selected' : ''}>1 hora</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">💰 Preço</label>
+                        <input 
+                            type="number" 
+                            placeholder="0.00"
+                            class="service-price w-full px-3 py-2 border rounded"
+                            step="0.01"
+                            value="${price}"
+                        >
+                    </div>
+                    <div class="flex items-end">
+                        <button 
+                            type="button"
+                            onclick="removeService(this)"
+                            class="text-red-600 hover:text-red-800 text-sm"
+                        >
+                            🗑️ Remover
+                        </button>
+                    </div>
+                </div>
+            `;
+            return newService;
+        }
+
+        function removeService(button) {
+            const serviceItem = button.closest('.service-item');
+            const servicesList = document.getElementById('servicesList');
+            if (servicesList.children.length > 1) {
+                serviceItem.remove();
+            } else {
+                alert('Você precisa ter pelo menos um serviço!');
+            }
+        }
+
+        // Coletar dados
+        function collectServices() {
+            const services = [];
+            document.querySelectorAll('.service-item').forEach(item => {
+                const name = item.querySelector('.service-name').value.trim();
+                const duration = parseInt(item.querySelector('.service-duration').value);
+                const price = parseFloat(item.querySelector('.service-price').value) || 0;
+                
+                if (name) {
+                    services.push({ name, duration, price });
+                }
+            });
+            return services;
+        }
+
+        function collectWorkingDays() {
+            const days = [];
+            document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
+                days.push(parseInt(checkbox.value));
+            });
+            return days;
+        }
+
+        function updateConfigSummary() {
+            const businessName = document.getElementById('businessName').value;
+            const workingDays = collectWorkingDays();
+            const openTime = document.getElementById('openTime').value;
+            const closeTime = document.getElementById('closeTime').value;
+            const services = collectServices();
+            
+            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const workingDaysText = workingDays.map(d => dayNames[d]).join(', ');
+            
+            const summary = `
+                <div><strong>Barbearia:</strong> ${businessName}</div>
+                <div><strong>Funcionamento:</strong> ${workingDaysText} das ${openTime}h às ${closeTime}h</div>
+                <div><strong>Serviços:</strong> ${services.length} configurados</div>
+                <div><strong>Principal:</strong> ${services[0]?.name} (${services[0]?.duration}min - R$ ${services[0]?.price})</div>
+            `;
+            
+            document.getElementById('configSummary').innerHTML = summary;
+        }
+
+        // Submissão do formulário
+        async function submitForm() {
+            const services = collectServices();
+            const workingDays = collectWorkingDays();
+            
             const formData = {
-                businessName: document.getElementById('businessName').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                openTime: document.getElementById('openTime').value,
-                closeTime: document.getElementById('closeTime').value,
-                serviceDuration: document.getElementById('serviceDuration').value
+                businessName: document.getElementById('businessName').value.trim(),
+                whatsapp: document.getElementById('whatsapp').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                openTime: parseInt(document.getElementById('openTime').value),
+                closeTime: parseInt(document.getElementById('closeTime').value),
+                bufferTime: parseInt(document.getElementById('bufferTime').value),
+                workingDays: workingDays,
+                services: services,
+                minAdvanceTime: parseInt(document.getElementById('minAdvanceTime').value),
+                maxBookingsPerDay: parseInt(document.getElementById('maxBookingsPerDay').value) || 0,
+                hasLunchBreak: document.getElementById('hasLunchBreak').checked,
+                lunchStart: document.getElementById('hasLunchBreak').checked ? document.getElementById('lunchStart').value : null,
+                lunchEnd: document.getElementById('hasLunchBreak').checked ? document.getElementById('lunchEnd').value : null
             };
-    
-            console.log('Enviando dados:', formData);
-    
+            
             try {
-                // Envia para o servidor
-                const response = await fetch('api/barbers', {
+                const response = await fetch('/api/barbers', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-    
+
                 const result = await response.json();
-                console.log('Resposta do servidor:', result);
-    
+
                 if (result.success) {
-                    // Mostra o resultado
-                    const link = result.data.bookingUrl;
-                    document.getElementById('generatedLink').textContent = link;
+                    document.getElementById('generatedLink').textContent = result.data.bookingUrl;
+                    document.getElementById('panelLink').href = `/painel.html?slug=${result.data.slug}`;
                     document.getElementById('result').classList.remove('hidden');
-                    
-                    // Esconde o formulário
-                    document.getElementById('setupForm').style.display = 'none';
-                    
-                    console.log('✅ Barbeiro salvo no Firebase!');
-                    alert('Cadastro realizado com sucesso!');
+                    document.querySelector('.container').classList.add('hidden');
                 } else {
-                    alert('Erro ao criar cadastro: ' + result.error);
+                    alert('Erro ao criar sistema: ' + (result.error || 'Erro desconhecido'));
                 }
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao conectar com o servidor.');
             }
-        });
-    
-        // Função para copiar o link
+        }
+
+        // Funções auxiliares
         function copyLink() {
             const link = document.getElementById('generatedLink').textContent;
             navigator.clipboard.writeText(link);
             alert('Link copiado! 📋');
         }
+
+        function testBooking() {
+            const link = document.getElementById('generatedLink').textContent;
+            window.open(link, '_blank');
+        }
+
+        // Inicialização
+        updateUI();
     </script>
 </body>
 </html>
