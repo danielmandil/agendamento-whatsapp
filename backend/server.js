@@ -81,12 +81,17 @@ app.post('/api/barbers', async (req, res) => {
         
         console.log('✅ SALVO COM SUCESSO!\n');
         
+        // Detecta se está em produção
+        const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}`
+        : `http://localhost:${PORT}`;
+
         res.json({
-            success: true,
-            data: {
-                ...barberData,
-                bookingUrl: `http://localhost:${PORT}/${slug}`
-            }
+        success: true,
+        data: {
+            ...barberData,
+            bookingUrl: `${baseUrl}/${slug}`
+        }
         });
         
     } catch (error) {
