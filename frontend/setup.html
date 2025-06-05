@@ -637,9 +637,16 @@
         }
 
         // Submissão do formulário
+       // ADICIONE estes logs no início da função submitForm() no seu setup.html
+
         async function submitForm() {
+            console.log('🚀 INICIANDO submitForm()');
+            
             const services = collectServices();
             const workingDays = collectWorkingDays();
+            
+            console.log('📊 Services coletados:', services);
+            console.log('📅 Working days coletados:', workingDays);
             
             const formData = {
                 businessName: document.getElementById('businessName').value.trim(),
@@ -657,25 +664,39 @@
                 lunchEnd: document.getElementById('hasLunchBreak').checked ? document.getElementById('lunchEnd').value : null
             };
             
+            console.log('📦 FormData montado:', formData);
+            
             try {
+                console.log('🌐 Fazendo fetch para /api/barbers...');
+                
                 const response = await fetch('/api/barbers', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
+                console.log('📥 Resposta recebida - Status:', response.status);
+                console.log('📥 Resposta recebida - OK:', response.ok);
+
                 const result = await response.json();
+                console.log('📋 Resultado parseado:', result);
 
                 if (result.success) {
+                    console.log('✅ SUCESSO! Dados:', result.data);
+                    console.log('🔗 Link gerado:', result.data.bookingUrl);
+                    
                     document.getElementById('generatedLink').textContent = result.data.bookingUrl;
                     document.getElementById('panelLink').href = `/painel.html?slug=${result.data.slug}`;
                     document.getElementById('result').classList.remove('hidden');
                     document.querySelector('.container').classList.add('hidden');
+                    
+                    console.log('🎯 Interface atualizada!');
                 } else {
+                    console.error('❌ Erro do servidor:', result.error);
                     alert('Erro ao criar sistema: ' + (result.error || 'Erro desconhecido'));
                 }
             } catch (error) {
-                console.error('Erro:', error);
+                console.error('💥 Erro na requisição:', error);
                 alert('Erro ao conectar com o servidor.');
             }
         }
