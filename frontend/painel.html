@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Meus Agendamentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto max-w-4xl p-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                📊 Painel de Agendamentos
+            </h1>
+            <p class="text-gray-600" id="barberName">Carregando...</p>
+            <div class="mt-4">
+                <span class="text-sm text-gray-500">Link para clientes:</span>
+                <div class="bg-gray-100 p-2 rounded mt-1">
+                    <code id="bookingLink" class="text-sm text-blue-600"></code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Filtrar por data
+                    </label>
+                    <input 
+                        type="date" 
+                        id="dateFilter"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                    >
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                    </label>
+                    <select id="statusFilter" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="">Todos</option>
+                        <option value="confirmed">Confirmados</option>
+                        <option value="cancelled">Cancelados</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button 
+                        onclick="loadBookings()"
+                        class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                    >
+                        🔍 Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Agendamentos -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                📅 Agendamentos
+            </h2>
+            
+            <!-- Loading -->
+            <div id="loading" class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Carregando agendamentos...</p>
+            </div>
+
+            <!-- Lista -->
+            <div id="bookingsList" class="hidden space-y-4">
+                <!-- Agendamentos serão inseridos aqui via JavaScript -->
+            </div>
+
+            <!-- Sem agendamentos -->
+            <div id="noBookings" class="hidden text-center py-8">
+                <p class="text-gray-500">Nenhum agendamento encontrado.</p>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Hoje</h3>
+                <p class="text-3xl font-bold text-blue-600" id="todayCount">0</p>
+                <p class="text-sm text-gray-500">agendamentos</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Esta Semana</h3>
+                <p class="text-3xl font-bold text-green-600" id="weekCount">0</p>
+                <p class="text-sm text-gray-500">agendamentos</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Este Mês</h3>
+                <p class="text-3xl font-bold text-purple-600" id="monthCount">0</p>
+                <p class="text-sm text-gray-500">agendamentos</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let barberSlug = '';
+        let barberData = null;
+        let allBookings = [];
+
+        // Pega o slug da URL ou solicita
+        function getBarberSlug() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('slug');
+            
+            if (!slug) {
+                const inputSlug = prompt('Digite o código do seu negócio (ex: barbearia-do-joao):');
+                if (inputSlug) {
+                    window.location.href = `?slug=${inputSlug}`;
+                } else {
+                    alert('Código necessário para acessar o painel!');
+                    window.location.href = '/setup.html';
+                }
+            }
+            
+            return slug;
+        }
+
+        // Carrega dados do barbeiro
+        async function loadBarberData() {
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    barberData = result.data;
+                    document.getElementById('barberName').textContent = barberData.businessName;
+                    
+                    const bookingUrl = window.location.origin + '/' + barberSlug;
+                    document.getElementById('bookingLink').textContent = bookingUrl;
+                } else {
+                    alert('Barbeiro não encontrado!');
+                    window.location.href = '/setup.html';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+        }
+
+        // Carrega agendamentos
+        async function loadBookings() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('bookingsList').classList.add('hidden');
+            document.getElementById('noBookings').classList.add('hidden');
+            
+            try {
+                // Por enquanto, vamos simular dados
+                // TODO: Implementar rota real no backend
+                const dateFilter = document.getElementById('dateFilter').value;
+                
+                // Simula agendamentos
+                allBookings = [
+                    {
+                        customerName: 'João Silva',
+                        customerPhone: '11999999999',
+                        date: new Date().toISOString().split('T')[0],
+                        time: '14:00',
+                        status: 'confirmed'
+                    },
+                    {
+                        customerName: 'Pedro Santos',
+                        customerPhone: '11888888888',
+                        date: new Date().toISOString().split('T')[0],
+                        time: '15:00',
+                        status: 'confirmed'
+                    }
+                ];
+                
+                displayBookings(allBookings);
+                updateStatistics(allBookings);
+                
+            } catch (error) {
+                console.error('Erro ao carregar agendamentos:', error);
+                alert('Erro ao carregar agendamentos');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Exibe agendamentos
+        function displayBookings(bookings) {
+            const bookingsList = document.getElementById('bookingsList');
+            bookingsList.innerHTML = '';
+            
+            if (bookings.length === 0) {
+                document.getElementById('noBookings').classList.remove('hidden');
+                return;
+            }
+            
+            bookingsList.classList.remove('hidden');
+            
+            bookings.forEach(booking => {
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'border rounded-lg p-4 hover:bg-gray-50';
+                
+                const statusColor = booking.status === 'confirmed' ? 'green' : 'red';
+                const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
+                
+                bookingCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${booking.customerName}</h3>
+                            <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
+                            <p class="text-sm text-gray-600">📅 ${formatDate(booking.date)} às ${booking.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
+                                ${statusText}
+                            </span>
+                            <div class="mt-2">
+                                <button 
+                                    onclick="sendWhatsApp('${booking.customerPhone}', '${booking.customerName}', '${booking.date}', '${booking.time}')"
+                                    class="text-green-600 hover:text-green-800"
+                                >
+                                    💬 WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                bookingsList.appendChild(bookingCard);
+            });
+        }
+
+        // Formata data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Atualiza estatísticas
+        function updateStatistics(bookings) {
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = bookings.filter(b => b.date === today).length;
+            
+            document.getElementById('todayCount').textContent = todayBookings;
+            document.getElementById('weekCount').textContent = bookings.length; // Simplificado
+            document.getElementById('monthCount').textContent = bookings.length; // Simplificado
+        }
+
+        // Envia mensagem WhatsApp
+        function sendWhatsApp(phone, name, date, time) {
+            const message = `Olá ${name}! Lembrando do seu agendamento para ${formatDate(date)} às ${time}. Até lá! 😊`;
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Inicializa
+        window.addEventListener('DOMContentLoaded', async () => {
+            barberSlug = getBarberSlug();
+            if (barberSlug) {
+                await loadBarberData();
+                await loadBookings();
+                
+                // Define data de hoje no filtro
+                document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>

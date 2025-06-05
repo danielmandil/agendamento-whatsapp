@@ -241,6 +241,43 @@ app.get('/api/bookings/:barberSlug/:date', async (req, res) => {
     }
 });
 
+// 5. Buscar agendamentos de um barbeiro
+app.get('/api/barbers/:slug/bookings', async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const { date, status } = req.query;
+        
+        let query = db.collection('bookings').where('barberSlug', '==', slug);
+        
+        if (date) {
+            query = query.where('date', '==', date);
+        }
+        
+        if (status) {
+            query = query.where('status', '==', status);
+        }
+        
+        const snapshot = await query.orderBy('date', 'desc').orderBy('time', 'desc').get();
+        
+        const bookings = [];
+        snapshot.forEach(doc => {
+            bookings.push({ id: doc.id, ...doc.data() });
+        });
+        
+        res.json({
+            success: true,
+            data: bookings
+        });
+        
+    } catch (error) {
+        console.error('Erro ao buscar agendamentos:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
 // Inicia servidor
 app.listen(PORT, () => {
     console.log('\n========================================');
