@@ -43,13 +43,25 @@
         </div>
 
         <!-- Seletor de Data -->
+        <!-- SUBSTITUA a seção "Seletor de Data" no agendar.html por esta versão: -->
+
+        <!-- Seletor de Data -->
         <div class="bg-white rounded-lg shadow-md p-4 mb-4">
-            <h3 class="font-medium text-gray-700 mb-3">
-                📅 Escolha o dia
-            </h3>
-            <div class="grid grid-cols-3 gap-2" id="daySelector">
+        <h3 class="font-medium text-gray-700 mb-3">
+            📅 Escolha o dia
+        </h3>
+        
+        <!-- Container com scroll horizontal -->
+        <div class="overflow-x-auto pb-2">
+            <div class="grid grid-flow-col auto-cols-max gap-2 min-w-max" id="daySelector">
                 <!-- Dias serão gerados via JavaScript -->
             </div>
+        </div>
+        
+        <!-- Dica de navegação -->
+        <p class="text-xs text-gray-500 mt-2 text-center">
+            👆 Deslize para ver mais dias disponíveis
+        </p>
         </div>
 
         <!-- Horários Disponíveis -->
@@ -237,53 +249,60 @@
         }
 
         // Gera os próximos dias - VERSÃO ATUALIZADA
-        function generateDays() {
-            const daySelector = document.getElementById('daySelector');
-            daySelector.innerHTML = '';
-            
-            const today = new Date();
-            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-            
-            let availableDaysCount = 0;
-            let firstAvailableButton = null;
-            
-            for (let i = 0; i < 14; i++) { // Verificar 14 dias para encontrar 7 disponíveis
-                const date = new Date(today);
-                date.setDate(today.getDate() + i);
-                
-                const dayOfWeek = date.getDay();
-                
-                // Verificar se é um dia de funcionamento
-                if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
-                    continue;
-                }
-                
-                const dayElement = document.createElement('button');
-                dayElement.className = 'p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition';
-                dayElement.innerHTML = `
-                    <div class="text-xs text-gray-500">${days[date.getDay()]}</div>
-                    <div class="font-medium">${date.getDate()}</div>
-                    <div class="text-xs text-gray-500">${months[date.getMonth()]}</div>
-                `;
-                dayElement.onclick = () => selectDate(date, dayElement);
-                
-                daySelector.appendChild(dayElement);
-                
-                if (!firstAvailableButton) {
-                    firstAvailableButton = dayElement;
-                }
-                
-                availableDaysCount++;
-                if (availableDaysCount >= 7) break; // Parar quando tiver 7 dias disponíveis
-            }
-            
-            // Selecionar o primeiro dia disponível
-            if (firstAvailableButton) {
-                firstAvailableButton.click();
-            }
-        }
 
+        function generateDays() {
+        const daySelector = document.getElementById('daySelector');
+        daySelector.innerHTML = '';
+        
+        const today = new Date();
+        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        
+        let availableDaysCount = 0;
+        let firstAvailableButton = null;
+        
+        // AUMENTADO: Agora verifica 45 dias para encontrar até 21 dias disponíveis
+        for (let i = 0; i < 45; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            
+            const dayOfWeek = date.getDay();
+            
+            // Verificar se é um dia de funcionamento
+            if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
+                continue;
+            }
+            
+            const dayElement = document.createElement('button');
+            dayElement.className = 'p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-center';
+            
+            // Destacar hoje e amanhã
+            let dayLabel = days[date.getDay()];
+            if (i === 0) dayLabel = 'Hoje';
+            else if (i === 1) dayLabel = 'Amanhã';
+            
+            dayElement.innerHTML = `
+                <div class="text-xs text-gray-500">${dayLabel}</div>
+                <div class="font-medium">${date.getDate()}</div>
+                <div class="text-xs text-gray-500">${months[date.getMonth()]}</div>
+            `;
+            dayElement.onclick = () => selectDate(date, dayElement);
+            
+            daySelector.appendChild(dayElement);
+            
+            if (!firstAvailableButton) {
+                firstAvailableButton = dayElement;
+            }
+            
+            availableDaysCount++;
+            if (availableDaysCount >= 21) break; // Parar quando tiver 21 dias disponíveis
+        }
+    
+    // Selecionar o primeiro dia disponível
+    if (firstAvailableButton) {
+        firstAvailableButton.click();
+    }
+}
         // Seleciona uma data
         async function selectDate(date, element) {
             selectedDate = date;
