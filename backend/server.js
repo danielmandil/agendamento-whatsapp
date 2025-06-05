@@ -140,10 +140,23 @@ app.post('/api/barbers', async (req, res) => {
 
         console.log('✅ SALVO COM SUCESSO!\n');
 
-        // Detecta se está em produção
-        const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}`
-            : `http://localhost:${PORT}`;
+        // Detecta se está em produção - VERSÃO CORRIGIDA PARA DOMÍNIO PÚBLICO
+        let baseUrl;
+
+        // Se estiver no Vercel (produção)
+        if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+            // IMPORTANTE: Use o domínio público do Vercel, não o temporário
+            baseUrl = 'https://agendamento-whatsapp.vercel.app';
+        } else if (process.env.VERCEL_URL) {
+            // Para previews/desenvolvimento no Vercel
+            baseUrl = `https://${process.env.VERCEL_URL}`;
+        } else {
+            // Para desenvolvimento local
+            baseUrl = `http://localhost:${PORT}`;
+        }
+
+        console.log('🔗 Base URL detectada:', baseUrl);
+        console.log('🌍 Ambiente:', process.env.VERCEL_ENV || process.env.NODE_ENV || 'local');
 
         res.json({
             success: true,
