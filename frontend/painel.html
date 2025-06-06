@@ -350,25 +350,31 @@
         let currentDate = new Date();
         let currentView = 'calendar';
         let selectedBooking = null;
-        let blockedDates = [];
+        let availabilityRules = [];
+        let currentDateRule = null;
 
-        // Inicialização
+        // ===== INICIALIZAÇÃO =====
         window.addEventListener('DOMContentLoaded', async () => {
             barberSlug = getBarberSlug();
             if (barberSlug) {
                 await loadBarberData();
                 await loadBookings();
-                await loadBlockedDates();
                 generateCalendar();
                 updateStatistics();
                 
                 // Define data de hoje no filtro
                 document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
-                document.getElementById('blockDate').min = new Date().toISOString().split('T')[0];
+                
+                // Configurar data mínima (hoje)
+                const today = new Date().toISOString().split('T')[0];
+                const selectedDateInput = document.getElementById('selectedDate');
+                if (selectedDateInput) {
+                    selectedDateInput.min = today;
+                }
             }
         });
 
-        // Pega o slug da URL
+        // ===== GESTÃO DE BARBEIRO =====
         function getBarberSlug() {
             const urlParams = new URLSearchParams(window.location.search);
             const slug = urlParams.get('slug');
@@ -386,7 +392,6 @@
             return slug;
         }
 
-        // Carrega dados do barbeiro
         async function loadBarberData() {
             try {
                 const response = await fetch(`/api/barbers/${barberSlug}`);
@@ -405,11 +410,18 @@
                     document.getElementById('newCloseTime').value = barberData.closeTime;
                     
                     if (barberData.workingDays) {
+                        // Limpar seleções anteriores
+                        document.querySelectorAll('.modal-day-checkbox').forEach(cb => cb.checked = false);
+                        
+                        // Marcar dias atuais
                         barberData.workingDays.forEach(day => {
                             const checkbox = document.getElementById(`modal-day-${day}`);
                             if (checkbox) checkbox.checked = true;
                         });
                     }
+
+                    // Carregar regras de disponibilidade
+                    await loadAvailabilityRules();
                 } else {
                     alert('Barbeiro não encontrado!');
                     window.location.href = '/setup.html';
@@ -650,7 +662,7 @@
             selectedBooking = null;
         }
 
-        // Funções auxiliares
+        // ===== FUNÇÕES AUXILIARES =====
         function formatDate(dateString) {
             const date = new Date(dateString + 'T12:00:00');
             return date.toLocaleDateString('pt-BR');
@@ -669,29 +681,319 @@
             alert('Funcionalidade de exportação em desenvolvimento!');
         }
 
-        // Placeholder para outras funções
-        function loadBlockedDates() {
-            // Implementar carregamento de datas bloqueadas
-        }
-
-        function toggleDateAvailability() {
-            // Implementar bloqueio/desbloqueio de datas
-            alert('Funcionalidade em desenvolvimento!');
-        }
-
-        function updateSchedule() {
-            // Implementar atualização de horários
-            alert('Funcionalidade em desenvolvimento!');
-        }
-
-        function updateWorkingDays() {
-            // Implementar atualização de dias de funcionamento
-            alert('Funcionalidade em desenvolvimento!');
-        }
-
         function cancelBookingFromModal() {
             // Implementar cancelamento de agendamento
             alert('Funcionalidade em desenvolvimento!');
+        }
+
+        // Modal controls
+        function openAvailabilityModal() {
+            document.getElementById('availabilityModal').classList.remove('hidden');
+        }
+
+        function closeAvailabilityModal() {
+            document.getElementById('availabilityModal').classList.add('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            selectedBooking = null;
+        }
+
+        // ===== GESTÃO DE DISPONIBILIDADE =====
+        async function loadAvailabilityRules() {
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/availability`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    availabilityRules = result.data.availabilityRules;
+                    updateExistingRulesList();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar regras:', error);
+            }
+        }
+
+        function switchTab(tabName) {
+            // Atualizar botões
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById(`tab-${tabName}`).classList.remove('border-transparent', 'text-gray-500');
+            document.getElementById(`tab-${tabName}`).classList.add('border-blue-500', 'text-blue-600');
+            
+            // Atualizar conteúdo
+            document.getElementById('tab-content-specific').classList.toggle('hidden', tabName !== 'specific');
+            document.getElementById('tab-content-general').classList.toggle('hidden', tabName !== 'general');
+        }
+
+        async function loadDateAvailability() {
+            const selectedDate = document.getElementById('selectedDate').value;
+            if (!selectedDate) return;
+            
+            // Mostrar opções
+            document.getElementById('dateOptions').classList.remove('hidden');
+            
+            // Buscar regra existente
+            currentDateRule = availabilityRules.find(rule => rule.date === selectedDate);
+            
+            if (currentDateRule) {
+                // Preencher formulário com dados existentes
+                document.querySelector(`input[value="${currentDateRule.type}"]`).checked = true;
+                updateBlockOptions();
+                
+                if (currentDateRule.type === 'custom_hours') {
+                    document.getElementById('customOpenTime').value = currentDateRule.customOpenTime;
+                    document.getElementById('customCloseTime').value = currentDateRule.customCloseTime;
+                } else if (currentDateRule.type === 'blocked_hours') {
+                    generateHoursList();
+                    // Marcar horários bloqueados
+                    currentDateRule.blockedHours.forEach(hour => {
+                        const checkbox = document.querySelector(`input[value="${hour}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+                
+                document.getElementById('blockReason').value = currentDateRule.reason || '';
+                document.getElementById('removeRuleBtn').classList.remove('hidden');
+            } else {
+                // Limpar formulário
+                document.querySelectorAll('input[name="blockType"]').forEach(input => input.checked = false);
+                document.getElementById('blockReason').value = '';
+                document.getElementById('removeRuleBtn').classList.add('hidden');
+                updateBlockOptions();
+            }
+            
+            document.getElementById('saveRuleBtn').disabled = false;
+        }
+
+        function updateBlockOptions() {
+            const selectedType = document.querySelector('input[name="blockType"]:checked')?.value;
+            
+            // Esconder todas as seções
+            document.getElementById('customHoursSection').classList.add('hidden');
+            document.getElementById('specificHoursSection').classList.add('hidden');
+            
+            if (selectedType === 'custom_hours') {
+                document.getElementById('customHoursSection').classList.remove('hidden');
+            } else if (selectedType === 'blocked_hours') {
+                document.getElementById('specificHoursSection').classList.remove('hidden');
+                generateHoursList();
+            }
+        }
+
+        function generateHoursList() {
+            const hoursList = document.getElementById('hoursList');
+            hoursList.innerHTML = '';
+            
+            const openTime = barberData.openTime || 9;
+            const closeTime = barberData.closeTime || 18;
+            
+            for (let hour = openTime; hour < closeTime; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center space-x-1 text-sm';
+                    label.innerHTML = `
+                        <input type="checkbox" value="${timeString}" class="hour-checkbox">
+                        <span>${timeString}</span>
+                    `;
+                    
+                    hoursList.appendChild(label);
+                }
+            }
+        }
+
+        async function saveAvailabilityRule() {
+            const selectedDate = document.getElementById('selectedDate').value;
+            const selectedType = document.querySelector('input[name="blockType"]:checked')?.value;
+            const reason = document.getElementById('blockReason').value;
+            
+            if (!selectedDate || !selectedType) {
+                alert('Selecione uma data e um tipo de bloqueio');
+                return;
+            }
+            
+            let ruleData = {
+                date: selectedDate,
+                type: selectedType,
+                reason: reason
+            };
+            
+            if (selectedType === 'custom_hours') {
+                ruleData.customOpenTime = document.getElementById('customOpenTime').value;
+                ruleData.customCloseTime = document.getElementById('customCloseTime').value;
+            } else if (selectedType === 'blocked_hours') {
+                const selectedHours = Array.from(document.querySelectorAll('.hour-checkbox:checked'))
+                    .map(checkbox => checkbox.value);
+                
+                if (selectedHours.length === 0) {
+                    alert('Selecione pelo menos um horário para bloquear');
+                    return;
+                }
+                
+                ruleData.blockedHours = selectedHours;
+            }
+            
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/availability`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ruleData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Configuração salva com sucesso!');
+                    await loadAvailabilityRules();
+                    loadDateAvailability(); // Recarregar para atualizar interface
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar regra:', error);
+                alert('❌ Erro ao salvar configuração');
+            }
+        }
+
+        async function removeAvailabilityRule() {
+            if (!currentDateRule) return;
+            
+            if (!confirm('Tem certeza que deseja remover esta configuração?')) return;
+            
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/availability/${currentDateRule.id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Configuração removida com sucesso!');
+                    await loadAvailabilityRules();
+                    
+                    // Limpar formulário
+                    document.getElementById('selectedDate').value = '';
+                    document.getElementById('dateOptions').classList.add('hidden');
+                    currentDateRule = null;
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao remover regra:', error);
+                alert('❌ Erro ao remover configuração');
+            }
+        }
+
+        function updateExistingRulesList() {
+            const container = document.getElementById('existingRules');
+            container.innerHTML = '';
+            
+            if (availabilityRules.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">Nenhuma configuração específica ativa</p>';
+                return;
+            }
+            
+            availabilityRules.forEach(rule => {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                
+                let typeText = '';
+                if (rule.type === 'blocked_day') typeText = '🔒 Dia bloqueado';
+                else if (rule.type === 'custom_hours') typeText = `🕐 ${rule.customOpenTime}h-${rule.customCloseTime}h`;
+                else if (rule.type === 'blocked_hours') typeText = `⏰ ${rule.blockedHours.length} horários bloqueados`;
+                
+                ruleElement.innerHTML = `
+                    <div>
+                        <div class="font-medium text-sm">${formatDate(rule.date)}</div>
+                        <div class="text-xs text-gray-600">${typeText}</div>
+                        ${rule.reason ? `<div class="text-xs text-gray-500">${rule.reason}</div>` : ''}
+                    </div>
+                    <button 
+                        onclick="editRule('${rule.id}')"
+                        class="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                        ✏️ Editar
+                    </button>
+                `;
+                
+                container.appendChild(ruleElement);
+            });
+        }
+
+        function editRule(ruleId) {
+            const rule = availabilityRules.find(r => r.id === ruleId);
+            if (!rule) return;
+            
+            // Definir data no seletor
+            document.getElementById('selectedDate').value = rule.date;
+            
+            // Mudar para tab específica
+            switchTab('specific');
+            
+            // Carregar dados da regra
+            loadDateAvailability();
+        }
+
+        async function updateSchedule() {
+            const openTime = document.getElementById('newOpenTime').value;
+            const closeTime = document.getElementById('newCloseTime').value;
+            
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/schedule`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ openTime, closeTime })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Horários atualizados com sucesso!');
+                    await loadBarberData(); // Recarregar dados
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar horários:', error);
+                alert('❌ Erro ao atualizar horários');
+            }
+        }
+
+        async function updateWorkingDays() {
+            const workingDays = Array.from(document.querySelectorAll('.modal-day-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (workingDays.length === 0) {
+                alert('Selecione pelo menos um dia de funcionamento');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/working-days`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workingDays })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Dias de funcionamento atualizados!');
+                    await loadBarberData(); // Recarregar dados
+                    generateCalendar(); // Regenerar calendário
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar dias:', error);
+                alert('❌ Erro ao atualizar dias');
+            }
         }
     </script>
 </body>
