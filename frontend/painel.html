@@ -54,6 +54,13 @@
                     <p class="text-gray-600" id="barberName">Carregando...</p>
                 </div>
                 <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+                    <!-- ✅ NOVO BOTÃO: Adicionar Agendamento -->
+                    <button 
+                        onclick="openAddBookingModal()"
+                        class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                    >
+                        ➕ Novo Agendamento
+                    </button>
                     <button 
                         onclick="openAvailabilityModal()"
                         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -194,6 +201,116 @@
         </div>
     </div>
 
+    <!-- ✅ NOVO MODAL: Adicionar Agendamento -->
+    <div id="addBookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        ➕ Novo Agendamento
+                    </h3>
+                    <button 
+                        onclick="closeAddBookingModal()"
+                        class="text-gray-500 hover:text-gray-700"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <form id="addBookingForm" class="space-y-4">
+                    <!-- Nome do Cliente -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nome do Cliente *
+                        </label>
+                        <input 
+                            type="text" 
+                            id="newCustomerName"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            placeholder="João Silva"
+                            required
+                        >
+                    </div>
+
+                    <!-- WhatsApp do Cliente -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            WhatsApp *
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="newCustomerPhone"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            placeholder="31999999999"
+                            required
+                        >
+                    </div>
+
+                    <!-- Data -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Data *
+                        </label>
+                        <input 
+                            type="date" 
+                            id="newBookingDate"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            required
+                        >
+                    </div>
+
+                    <!-- Horário -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Horário *
+                        </label>
+                        <select 
+                            id="newBookingTime"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            required
+                        >
+                            <option value="">Selecione um horário</option>
+                            <!-- Horários serão preenchidos via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Serviço -->
+                    <div id="newServiceSelector">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Serviço *
+                        </label>
+                        <select 
+                            id="newBookingService"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            required
+                        >
+                            <option value="">Selecione um serviço</option>
+                            <!-- Serviços serão preenchidos via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="flex gap-3 pt-4">
+                        <button 
+                            type="button"
+                            onclick="closeAddBookingModal()"
+                            class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="submit"
+                            id="saveBookingBtn"
+                            class="flex-1 bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-600"
+                        >
+                            💾 Salvar Agendamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Configuração de Disponibilidade -->
     <div id="availabilityModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
@@ -310,7 +427,7 @@
         </div>
     </div>
 
-    <!-- Modal de Detalhes do Agendamento -->
+    <!-- ✅ MODAL ATUALIZADO: Detalhes do Agendamento -->
     <div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="p-6">
@@ -330,18 +447,61 @@
                     <!-- Será preenchido via JS -->
                 </div>
 
-                <div class="mt-6 flex gap-3">
+                <!-- ✅ BOTÕES ATUALIZADOS COM DELETAR -->
+                <div class="mt-6 grid grid-cols-1 gap-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button 
+                            onclick="sendWhatsAppFromModal()"
+                            class="bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+                        >
+                            💬 WhatsApp
+                        </button>
+                        <button 
+                            onclick="cancelBookingFromModal()"
+                            class="bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
+                        >
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                    <!-- ✅ NOVO BOTÃO: Deletar -->
                     <button 
-                        onclick="sendWhatsAppFromModal()"
-                        class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+                        onclick="deleteBookingFromModal()"
+                        class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
                     >
-                        💬 WhatsApp
+                        🗑️ Deletar Agendamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ MODAL DE CONFIRMAÇÃO -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">⚠️</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                    Confirmar Exclusão
+                </h3>
+                <p class="text-gray-600 mb-6" id="confirmMessage">
+                    Tem certeza que deseja deletar este agendamento? Esta ação não pode ser desfeita.
+                </p>
+                
+                <div class="flex gap-3">
+                    <button 
+                        onclick="closeConfirmModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
+                    >
+                        Cancelar
                     </button>
                     <button 
-                        onclick="cancelBookingFromModal()"
-                        class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                        onclick="confirmDelete()"
+                        id="confirmDeleteBtn"
+                        class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
                     >
-                        ❌ Cancelar
+                        Deletar
                     </button>
                 </div>
             </div>
@@ -356,6 +516,7 @@
         let currentView = 'calendar';
         let selectedBooking = null;
         let blockedDates = [];
+        let bookingToDelete = null; // ✅ Para armazenar agendamento a ser deletado
 
         // Inicialização
         window.addEventListener('DOMContentLoaded', async () => {
@@ -367,13 +528,12 @@
                 generateCalendar();
                 updateStatistics();
                 
-                // Define data de hoje no filtro
                 document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
                 document.getElementById('blockDate').min = new Date().toISOString().split('T')[0];
+                document.getElementById('newBookingDate').min = new Date().toISOString().split('T')[0];
             }
         });
 
-        // Pega o slug da URL
         function getBarberSlug() {
             const urlParams = new URLSearchParams(window.location.search);
             const slug = urlParams.get('slug');
@@ -391,7 +551,6 @@
             return slug;
         }
 
-        // Carrega dados do barbeiro
         async function loadBarberData() {
             try {
                 const response = await fetch(`/api/barbers/${barberSlug}`);
@@ -405,7 +564,6 @@
                     const bookingUrl = window.location.origin + '/' + barberSlug;
                     document.getElementById('bookingLink').textContent = bookingUrl;
 
-                    // Preencher modal com dados atuais
                     document.getElementById('newOpenTime').value = barberData.openTime;
                     document.getElementById('newCloseTime').value = barberData.closeTime;
                     
@@ -415,6 +573,9 @@
                             if (checkbox) checkbox.checked = true;
                         });
                     }
+
+                    // ✅ Preencher serviços no modal de novo agendamento
+                    populateServicesDropdown();
                 } else {
                     alert('Barbeiro não encontrado!');
                     window.location.href = '/setup.html';
@@ -424,7 +585,27 @@
             }
         }
 
-        // Carrega agendamentos
+        // ✅ NOVA FUNÇÃO: Preencher dropdown de serviços
+        function populateServicesDropdown() {
+            const serviceSelect = document.getElementById('newBookingService');
+            serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+            
+            if (barberData.services && barberData.services.length > 0) {
+                barberData.services.forEach((service, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${service.name} - ${service.duration}min - R$ ${service.price.toFixed(2)}`;
+                    serviceSelect.appendChild(option);
+                });
+            } else {
+                // Serviço padrão se não tiver múltiplos
+                const option = document.createElement('option');
+                option.value = '0';
+                option.textContent = `Serviço - ${barberData.serviceDuration || 30}min`;
+                serviceSelect.appendChild(option);
+            }
+        }
+
         async function loadBookings() {
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value;
@@ -455,7 +636,6 @@
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Carrega datas bloqueadas
         async function loadBlockedDates() {
             try {
                 const response = await fetch(`/api/barbers/${barberSlug}/blocked-dates`);
@@ -474,7 +654,6 @@
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Atualiza lista de datas bloqueadas no modal
         function updateBlockedDatesList() {
             const blockedDatesList = document.getElementById('blockedDatesList');
             
@@ -505,7 +684,6 @@
             });
         }
 
-        // ✅ FUNÇÃO CORRIGIDA: Bloquear/Desbloquear data
         async function toggleDateAvailability() {
             const dateInput = document.getElementById('blockDate');
             const selectedDate = dateInput.value;
@@ -524,14 +702,11 @@
                 const isBlocked = blockedDates.includes(selectedDate);
                 
                 if (isBlocked) {
-                    // Desbloquear
                     await unblockDate(selectedDate);
                 } else {
-                    // Bloquear
                     await blockDate(selectedDate);
                 }
                 
-                // Limpar campo de data
                 dateInput.value = '';
                 
             } catch (error) {
@@ -543,7 +718,6 @@
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Bloquear data
         async function blockDate(dateString) {
             try {
                 const response = await fetch('/api/blocked-dates', {
@@ -563,7 +737,7 @@
                 if (result.success) {
                     blockedDates.push(dateString);
                     updateBlockedDatesList();
-                    generateCalendar(); // Atualizar calendário
+                    generateCalendar();
                     
                     const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
                     alert(`✅ Data ${formattedDate} foi bloqueada com sucesso!`);
@@ -576,7 +750,6 @@
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Desbloquear data
         async function unblockDate(dateString) {
             try {
                 const response = await fetch('/api/blocked-dates', {
@@ -596,7 +769,7 @@
                 if (result.success) {
                     blockedDates = blockedDates.filter(date => date !== dateString);
                     updateBlockedDatesList();
-                    generateCalendar(); // Atualizar calendário
+                    generateCalendar();
                     
                     const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
                     alert(`✅ Data ${formattedDate} foi desbloqueada com sucesso!`);
@@ -609,7 +782,125 @@
             }
         }
 
-        // Gera o calendário
+        // ✅ NOVA FUNÇÃO: Abrir modal de adicionar agendamento
+        function openAddBookingModal() {
+            document.getElementById('addBookingModal').classList.remove('hidden');
+            
+            // Configurar data mínima como hoje
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('newBookingDate').value = today;
+            
+            // Carregar horários para hoje
+            loadAvailableTimesForDate(today);
+            
+            // Event listener para mudança de data
+            document.getElementById('newBookingDate').addEventListener('change', function() {
+                loadAvailableTimesForDate(this.value);
+            });
+        }
+
+        // ✅ NOVA FUNÇÃO: Fechar modal de adicionar agendamento
+        function closeAddBookingModal() {
+            document.getElementById('addBookingModal').classList.add('hidden');
+            document.getElementById('addBookingForm').reset();
+        }
+
+        // ✅ NOVA FUNÇÃO: Carregar horários disponíveis para uma data
+        async function loadAvailableTimesForDate(dateString) {
+            const timeSelect = document.getElementById('newBookingTime');
+            timeSelect.innerHTML = '<option value="">Carregando...</option>';
+            
+            try {
+                const response = await fetch(`/api/bookings/${barberSlug}/${dateString}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const existingBookings = result.data;
+                    const config = result.barberConfig;
+                    
+                    timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                    
+                    // Gerar horários disponíveis
+                    const serviceDuration = 30; // Padrão, será ajustado quando serviço for selecionado
+                    const bufferTime = config.bufferTime || 0;
+                    
+                    for (let hour = config.openTime; hour < config.closeTime; hour++) {
+                        for (let minute = 0; minute < 60; minute += serviceDuration + bufferTime) {
+                            const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                            
+                            // Verificar se horário está ocupado
+                            const isBooked = existingBookings.some(booking => booking.time === timeString);
+                            
+                            if (!isBooked) {
+                                const option = document.createElement('option');
+                                option.value = timeString;
+                                option.textContent = timeString;
+                                timeSelect.appendChild(option);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar horários:', error);
+                timeSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
+            }
+        }
+
+        // ✅ NOVA FUNÇÃO: Salvar novo agendamento
+        document.getElementById('addBookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveBookingBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Salvando...';
+            
+            try {
+                const formData = {
+                    barberSlug,
+                    customerName: document.getElementById('newCustomerName').value.trim(),
+                    customerPhone: document.getElementById('newCustomerPhone').value.trim(),
+                    date: document.getElementById('newBookingDate').value,
+                    time: document.getElementById('newBookingTime').value
+                };
+                
+                // Adicionar dados do serviço se selecionado
+                const serviceIndex = document.getElementById('newBookingService').value;
+                if (serviceIndex !== '' && barberData.services && barberData.services[serviceIndex]) {
+                    const service = barberData.services[serviceIndex];
+                    formData.serviceId = serviceIndex;
+                    formData.serviceName = service.name;
+                    formData.serviceDuration = service.duration;
+                    formData.servicePrice = service.price;
+                }
+                
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Agendamento criado com sucesso!');
+                    closeAddBookingModal();
+                    await loadBookings(); // Recarregar agendamentos
+                } else {
+                    throw new Error(result.error || 'Erro ao criar agendamento');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao salvar agendamento:', error);
+                alert('❌ Erro ao criar agendamento: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        });
+
         function generateCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonth = document.getElementById('currentMonth');
@@ -617,21 +908,17 @@
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             
-            // Atualizar título do mês
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             currentMonth.textContent = `${monthNames[month]} ${year}`;
             
-            // Limpar calendário
             calendarGrid.innerHTML = '';
             
-            // Primeiro dia do mês e último dia
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const startDate = new Date(firstDay);
             startDate.setDate(startDate.getDate() - firstDay.getDay());
             
-            // Gerar 42 dias (6 semanas)
             for (let i = 0; i < 42; i++) {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + i);
@@ -639,7 +926,6 @@
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day p-2';
                 
-                // Classes condicionais
                 const isToday = date.toDateString() === new Date().toDateString();
                 const isCurrentMonth = date.getMonth() === month;
                 const dayOfWeek = date.getDay();
@@ -651,13 +937,11 @@
                 if (!isCurrentMonth) dayElement.classList.add('other-month');
                 if (!isWorkingDay) dayElement.style.backgroundColor = '#f3f4f6';
                 
-                // Número do dia
                 const dayNumber = document.createElement('div');
                 dayNumber.className = 'font-medium text-sm mb-1';
                 dayNumber.textContent = date.getDate();
                 dayElement.appendChild(dayNumber);
                 
-                // ✅ Mostrar se dia está bloqueado
                 if (isBlocked) {
                     const blockedEl = document.createElement('div');
                     blockedEl.className = 'blocked-day';
@@ -665,7 +949,6 @@
                     dayElement.appendChild(blockedEl);
                 }
                 
-                // Agendamentos do dia
                 const dayBookings = allBookings.filter(booking => booking.date === dateStr);
                 
                 dayBookings.forEach(booking => {
@@ -680,7 +963,6 @@
             }
         }
 
-        // Exibe lista de agendamentos
         function displayBookingsList(bookings) {
             const bookingsList = document.getElementById('bookingsList');
             const noBookings = document.getElementById('noBookings');
@@ -723,7 +1005,6 @@
             });
         }
 
-        // Atualiza estatísticas
         function updateStatistics() {
             const today = new Date().toISOString().split('T')[0];
             const startOfWeek = new Date();
@@ -749,13 +1030,11 @@
             document.getElementById('monthRevenue').textContent = `R$ ${monthRevenue.toFixed(2)}`;
         }
 
-        // Navegação do calendário
         function changeMonth(direction) {
             currentDate.setMonth(currentDate.getMonth() + direction);
             generateCalendar();
         }
 
-        // Alternar visualização
         function toggleView() {
             const calendarView = document.getElementById('calendarView');
             const listView = document.getElementById('listView');
@@ -776,7 +1055,6 @@
             }
         }
 
-        // Modal de disponibilidade
         function openAvailabilityModal() {
             document.getElementById('availabilityModal').classList.remove('hidden');
             updateBlockedDatesList();
@@ -786,7 +1064,6 @@
             document.getElementById('availabilityModal').classList.add('hidden');
         }
 
-        // Modal de detalhes do agendamento
         function showBookingDetails(booking) {
             selectedBooking = booking;
             const modal = document.getElementById('bookingModal');
@@ -819,7 +1096,58 @@
             selectedBooking = null;
         }
 
-        // Funções auxiliares
+        // ✅ NOVA FUNÇÃO: Deletar agendamento do modal
+        function deleteBookingFromModal() {
+            if (!selectedBooking) return;
+            
+            bookingToDelete = selectedBooking;
+            
+            const confirmMessage = document.getElementById('confirmMessage');
+            confirmMessage.textContent = `Tem certeza que deseja deletar o agendamento de ${selectedBooking.customerName} para ${formatDate(selectedBooking.date)} às ${selectedBooking.time}?`;
+            
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        // ✅ NOVA FUNÇÃO: Fechar modal de confirmação
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            bookingToDelete = null;
+        }
+
+        // ✅ NOVA FUNÇÃO: Confirmar deleção
+        async function confirmDelete() {
+            if (!bookingToDelete) return;
+            
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Deletando...';
+            
+            try {
+                const response = await fetch(`/api/bookings/${bookingToDelete.bookingId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Agendamento deletado com sucesso!');
+                    closeConfirmModal();
+                    closeBookingModal();
+                    await loadBookings(); // Recarregar agendamentos
+                } else {
+                    throw new Error(result.error || 'Erro ao deletar agendamento');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao deletar agendamento:', error);
+                alert('❌ Erro ao deletar agendamento: ' + error.message);
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
+            }
+        }
+
         function formatDate(dateString) {
             const date = new Date(dateString + 'T12:00:00');
             return date.toLocaleDateString('pt-BR');
@@ -845,8 +1173,38 @@
             alert('Funcionalidade em desenvolvimento!');
         }
 
-        function cancelBookingFromModal() {
-            alert('Funcionalidade em desenvolvimento!');
+        // ✅ FUNÇÃO IMPLEMENTADA: Cancelar agendamento
+        async function cancelBookingFromModal() {
+            if (!selectedBooking) return;
+            
+            if (selectedBooking.status === 'cancelled') {
+                alert('Este agendamento já está cancelado!');
+                return;
+            }
+            
+            if (!confirm(`Tem certeza que deseja cancelar o agendamento de ${selectedBooking.customerName}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/bookings/${selectedBooking.bookingId}/cancel`, {
+                    method: 'PATCH'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Agendamento cancelado com sucesso!');
+                    closeBookingModal();
+                    await loadBookings(); // Recarregar agendamentos
+                } else {
+                    throw new Error(result.error || 'Erro ao cancelar agendamento');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao cancelar agendamento:', error);
+                alert('❌ Erro ao cancelar agendamento: ' + error.message);
+            }
         }
     </script>
 </body>

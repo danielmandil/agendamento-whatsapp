@@ -574,6 +574,104 @@ app.get('/:slug', (req, res) => {
     res.sendFile(path.join(frontendPath, 'agendar.html'));
 });
 
+// ✅ 8. NOVA ROTA: Deletar agendamento
+app.delete('/api/bookings/:bookingId', async (req, res) => {
+    console.log('\n🗑️ DELETE /api/bookings RECEBIDO!');
+    console.log('📦 BookingId:', req.params.bookingId);
+    
+    try {
+        const { bookingId } = req.params;
+
+        // Validações
+        if (!bookingId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID do agendamento é obrigatório'
+            });
+        }
+
+        // Verificar se agendamento existe
+        const bookingDoc = await db.collection('bookings').doc(bookingId).get();
+        if (!bookingDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Agendamento não encontrado' 
+            });
+        }
+
+        const bookingData = bookingDoc.data();
+
+        // Deletar agendamento
+        await db.collection('bookings').doc(bookingId).delete();
+        
+        console.log(`✅ Agendamento ${bookingId} deletado com sucesso`);
+
+        res.json({
+            success: true,
+            message: 'Agendamento deletado com sucesso',
+            data: bookingData
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao deletar agendamento:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ✅ 9. NOVA ROTA: Cancelar agendamento (mudar status)
+app.patch('/api/bookings/:bookingId/cancel', async (req, res) => {
+    console.log('\n❌ PATCH /api/bookings/cancel RECEBIDO!');
+    console.log('📦 BookingId:', req.params.bookingId);
+    
+    try {
+        const { bookingId } = req.params;
+
+        // Validações
+        if (!bookingId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID do agendamento é obrigatório'
+            });
+        }
+
+        // Verificar se agendamento existe
+        const bookingDoc = await db.collection('bookings').doc(bookingId).get();
+        if (!bookingDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Agendamento não encontrado' 
+            });
+        }
+
+        // Atualizar status para cancelado
+        await db.collection('bookings').doc(bookingId).update({
+            status: 'cancelled',
+            cancelledAt: new Date().toISOString()
+        });
+        
+        console.log(`✅ Agendamento ${bookingId} cancelado com sucesso`);
+
+        // Buscar dados atualizados
+        const updatedDoc = await db.collection('bookings').doc(bookingId).get();
+
+        res.json({
+            success: true,
+            message: 'Agendamento cancelado com sucesso',
+            data: updatedDoc.data()
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao cancelar agendamento:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Inicia servidor
 app.listen(PORT, () => {
     console.log('\n========================================');
