@@ -567,6 +567,7 @@
         }
 
         async function loadBookings() {
+            console.log('📥 Iniciando loadBookings...');
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value;
                 const statusFilter = document.getElementById('statusFilter')?.value;
@@ -579,25 +580,34 @@
                 
                 if (params.toString()) url += '?' + params.toString();
                 
+                console.log('🔗 Fazendo requisição para:', url);
+                
                 const response = await fetch(url);
                 const result = await response.json();
                 
+                console.log('📊 Resposta da API:', result);
+                
                 if (result.success) {
+                    console.log('✅ Dados recebidos:', result.data.length, 'agendamentos');
                     allBookings = result.data;
                     
-                    // ✅ CORRIGIDO: Sempre atualizar o calendário E a lista se necessário
+                    console.log('🗓️ Chamando generateCalendar...');
                     generateCalendar(); // Sempre gerar calendário
                     
                     if (currentView === 'list') {
-                        displayBookingsList(allBookings); // Só atualizar lista se estiver na vista de lista
+                        console.log('📋 Atualizando lista...');
+                        displayBookingsList(allBookings);
                     }
                     
+                    console.log('📈 Atualizando estatísticas...');
                     updateStatistics();
                     
                     console.log(`✅ ${allBookings.length} agendamentos carregados e interface atualizada`);
+                } else {
+                    console.error('❌ Erro na resposta da API:', result.error);
                 }
             } catch (error) {
-                console.error('Erro ao carregar agendamentos:', error);
+                console.error('❌ Erro ao carregar agendamentos:', error);
             }
         }
 
@@ -869,8 +879,23 @@
         });
 
         function generateCalendar() {
+            console.log('🗓️ Gerando calendário...');
+            console.log('   barberData:', barberData);
+            console.log('   allBookings length:', allBookings.length);
+            console.log('   currentDate:', currentDate);
+            
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonth = document.getElementById('currentMonth');
+            
+            if (!calendarGrid) {
+                console.error('❌ calendarGrid não encontrado!');
+                return;
+            }
+            
+            if (!barberData) {
+                console.error('❌ barberData não disponível!');
+                return;
+            }
             
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -879,12 +904,16 @@
                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             currentMonth.textContent = `${monthNames[month]} ${year}`;
             
+            // Limpar calendário
             calendarGrid.innerHTML = '';
+            console.log('📅 Calendário limpo, começando a gerar dias...');
             
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const startDate = new Date(firstDay);
             startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            let daysGenerated = 0;
             
             for (let i = 0; i < 42; i++) {
                 const date = new Date(startDate);
@@ -927,7 +956,11 @@
                 });
                 
                 calendarGrid.appendChild(dayElement);
+                daysGenerated++;
             }
+            
+            console.log(`✅ Calendário gerado com ${daysGenerated} dias`);
+            console.log('📊 Agendamentos no calendário:', allBookings.length);
         }
 
         function displayBookingsList(bookings) {
