@@ -585,12 +585,13 @@
                 if (result.success) {
                     allBookings = result.data;
                     
-                    // ✅ CORRIGIDO: Atualizar interface baseado na visualização atual
+                    // ✅ CORRIGIDO: Sempre atualizar o calendário E a lista se necessário
+                    generateCalendar(); // Sempre gerar calendário
+                    
                     if (currentView === 'list') {
-                        displayBookingsList(allBookings);
-                    } else {
-                        generateCalendar();
+                        displayBookingsList(allBookings); // Só atualizar lista se estiver na vista de lista
                     }
+                    
                     updateStatistics();
                     
                     console.log(`✅ ${allBookings.length} agendamentos carregados e interface atualizada`);
@@ -852,10 +853,8 @@
                     alert('✅ Agendamento criado com sucesso!');
                     closeAddBookingModal();
                     
-                    // ✅ CORRIGIDO: Atualizar TUDO após criar agendamento
+                    // ✅ SIMPLIFICADO: loadBookings() já cuida de tudo
                     await loadBookings();
-                    generateCalendar();
-                    updateStatistics();
                 } else {
                     throw new Error(result.error || 'Erro ao criar agendamento');
                 }
@@ -1119,10 +1118,8 @@
                     alert('✅ Agendamento cancelado com sucesso!');
                     closeBookingModal();
                     
-                    // ✅ CORRIGIDO: Atualizar TUDO após cancelar agendamento
+                    // ✅ SIMPLIFICADO: loadBookings() já cuida de tudo
                     await loadBookings();
-                    generateCalendar();
-                    updateStatistics();
                 } else {
                     throw new Error(result.error || 'Erro ao cancelar agendamento');
                 }
