@@ -324,25 +324,71 @@
         }
 
         // Carrega horários disponíveis - VERSÃO ATUALIZADA
+
         async function loadAvailableSlots() {
             const dateStr = selectedDate.toISOString().split('T')[0];
             
             try {
-                const response = await fetch(`/api/bookings/${barberData.slug}/${dateStr}`);
-                const result = await response.json();
+                // Buscar agendamentos existentes
+                const bookingsResponse = await fetch(`/api/bookings/${barberData.slug}/${dateStr}`);
+                const bookingsResult = await bookingsResponse.json();
                 
-                if (result.success) {
-                    existingBookings = result.data;
-                    barberConfig = result.barberConfig; // Nova configuração
+                // Buscar regras de disponibilidade específicas para esta data
+                const availabilityResponse = await fetch(`/api/barbers/${barberData.slug}/availability/${dateStr}`);
+                const availabilityResult = await availabilityResponse.json();
+                
+                if (bookingsResult.success) {
+                    existingBookings = bookingsResult.data;
+                    barberConfig = bookingsResult.barberConfig;
+                    
+                    // Aplicar regras de disponibilidade se existirem
+                    if (availabilityResult.success && availabilityResult.data.hasCustomRules) {
+                        const rules = availabilityResult.data.rules;
+                        
+                        // Verificar se o dia está completamente bloqueado
+                        const dayBlocked = rules.some(rule => rule.type === 'blocked_day');
+                        if (dayBlocked) {
+                            showNoSlotsMessage('Este dia não está disponível para agendamentos.');
+                            return;
+                        }
+                        
+                        // Aplicar regras de horário customizado ou bloqueios específicos
+                        rules.forEach(rule => {
+                            if (rule.type === 'custom_hours') {
+                                barberConfig.openTime = parseInt(rule.customOpenTime);
+                                barberConfig.closeTime = parseInt(rule.customCloseTime);
+                            } else if (rule.type === 'blocked_hours') {
+                                // Adicionar horários bloqueados como se fossem agendamentos
+                                rule.blockedHours.forEach(blockedHour => {
+                                    existingBookings.push({
+                                        time: blockedHour,
+                                        customerName: 'Bloqueado',
+                                        status: 'blocked'
+                                    });
+                                });
+                            }
+                        });
+                    }
+                    
                     generateTimeSlots();
                 } else {
-                    console.error('Erro ao carregar horários:', result.error);
+                    console.error('Erro ao carregar horários:', bookingsResult.error);
                     generateTimeSlots();
                 }
             } catch (error) {
                 console.error('Erro ao carregar horários:', error);
                 generateTimeSlots();
             }
+        }
+
+        // Função auxiliar para mostrar mensagem de sem horários
+        function showNoSlotsMessage(message = 'Nenhum horário disponível para este dia.') {
+            const timeSlotsContainer = document.getElementById('timeSlots');
+            const noSlotsMessage = document.getElementById('noSlotsMessage');
+            
+            timeSlotsContainer.classList.add('hidden');
+            noSlotsMessage.classList.remove('hidden');
+            noSlotsMessage.textContent = message;
         }
 
         // Gera os horários disponíveis - VERSÃO ATUALIZADA
