@@ -5,26 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel - Meus Agendamentos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calendar-day {
+            min-height: 120px;
+            border: 1px solid #e5e7eb;
+        }
+        .booking-item {
+            font-size: 0.75rem;
+            padding: 2px 4px;
+            margin: 1px 0;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .booking-confirmed {
+            background-color: #dcfce7;
+            color: #166534;
+            border-left: 3px solid #22c55e;
+        }
+        .booking-cancelled {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border-left: 3px solid #ef4444;
+        }
+        .today {
+            background-color: #eff6ff;
+            border: 2px solid #3b82f6;
+        }
+        .other-month {
+            background-color: #f9fafb;
+            color: #9ca3af;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto max-w-4xl p-4">
+    <div class="container mx-auto max-w-7xl p-4">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-2">
-                📊 Painel de Agendamentos
-            </h1>
-            <p class="text-gray-600" id="barberName">Carregando...</p>
-            <div class="mt-4">
-                <span class="text-sm text-gray-500">Link para clientes:</span>
-                <div class="bg-gray-100 p-2 rounded mt-1">
-                    <code id="bookingLink" class="text-sm text-blue-600"></code>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                        📊 Painel de Gestão
+                    </h1>
+                    <p class="text-gray-600" id="barberName">Carregando...</p>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+                    <button 
+                        onclick="openAvailabilityModal()"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    >
+                        ⚙️ Configurar Disponibilidade
+                    </button>
+                    <button 
+                        onclick="toggleView()"
+                        id="viewToggle"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                    >
+                        📋 Ver Lista
+                    </button>
+                    <div class="bg-gray-100 p-2 rounded">
+                        <span class="text-sm text-gray-500">Link para clientes:</span>
+                        <div class="text-xs">
+                            <code id="bookingLink" class="text-blue-600"></code>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filtros -->
+        <!-- Navegação do Calendário -->
         <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex justify-between items-center">
+                <button 
+                    onclick="changeMonth(-1)"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                    ← Anterior
+                </button>
+                
+                <h2 class="text-xl font-semibold text-gray-800" id="currentMonth">
+                    <!-- Será preenchido via JS -->
+                </h2>
+                
+                <button 
+                    onclick="changeMonth(1)"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                    Próximo →
+                </button>
+            </div>
+        </div>
+
+        <!-- Visualização em Calendário -->
+        <div id="calendarView" class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Cabeçalho dos dias da semana -->
+            <div class="grid grid-cols-7 bg-gray-100">
+                <div class="p-3 text-center font-medium text-gray-700">Dom</div>
+                <div class="p-3 text-center font-medium text-gray-700">Seg</div>
+                <div class="p-3 text-center font-medium text-gray-700">Ter</div>
+                <div class="p-3 text-center font-medium text-gray-700">Qua</div>
+                <div class="p-3 text-center font-medium text-gray-700">Qui</div>
+                <div class="p-3 text-center font-medium text-gray-700">Sex</div>
+                <div class="p-3 text-center font-medium text-gray-700">Sáb</div>
+            </div>
+            
+            <!-- Dias do calendário -->
+            <div id="calendarGrid" class="grid grid-cols-7">
+                <!-- Será preenchido via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Visualização em Lista -->
+        <div id="listView" class="hidden bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                📅 Lista de Agendamentos
+            </h2>
+            
+            <!-- Filtros -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Filtrar por data
@@ -32,14 +129,15 @@
                     <input 
                         type="date" 
                         id="dateFilter"
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                        class="w-full px-3 py-2 border rounded-lg"
+                        onchange="loadBookings()"
                     >
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Status
                     </label>
-                    <select id="statusFilter" class="w-full px-3 py-2 border rounded-lg">
+                    <select id="statusFilter" class="w-full px-3 py-2 border rounded-lg" onchange="loadBookings()">
                         <option value="">Todos</option>
                         <option value="confirmed">Confirmados</option>
                         <option value="cancelled">Cancelados</option>
@@ -47,29 +145,16 @@
                 </div>
                 <div class="flex items-end">
                     <button 
-                        onclick="loadBookings()"
-                        class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                        onclick="exportBookings()"
+                        class="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600"
                     >
-                        🔍 Filtrar
+                        📊 Exportar
                     </button>
                 </div>
             </div>
-        </div>
-
-        <!-- Lista de Agendamentos -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                📅 Agendamentos
-            </h2>
             
-            <!-- Loading -->
-            <div id="loading" class="text-center py-8">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p class="mt-4 text-gray-600">Carregando agendamentos...</p>
-            </div>
-
             <!-- Lista -->
-            <div id="bookingsList" class="hidden space-y-4">
+            <div id="bookingsList" class="space-y-4">
                 <!-- Agendamentos serão inseridos aqui via JavaScript -->
             </div>
 
@@ -80,7 +165,7 @@
         </div>
 
         <!-- Estatísticas -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
             <div class="bg-white rounded-lg shadow-md p-4 text-center">
                 <h3 class="text-lg font-semibold text-gray-700">Hoje</h3>
                 <p class="text-3xl font-bold text-blue-600" id="todayCount">0</p>
@@ -96,6 +181,165 @@
                 <p class="text-3xl font-bold text-purple-600" id="monthCount">0</p>
                 <p class="text-sm text-gray-500">agendamentos</p>
             </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Receita Mês</h3>
+                <p class="text-3xl font-bold text-yellow-600" id="monthRevenue">R$ 0</p>
+                <p class="text-sm text-gray-500">estimada</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Configuração de Disponibilidade -->
+    <div id="availabilityModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        ⚙️ Configurar Disponibilidade
+                    </h3>
+                    <button 
+                        onclick="closeAvailabilityModal()"
+                        class="text-gray-500 hover:text-gray-700"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Bloquear/Desbloquear Dias -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">📅 Bloquear Dias Específicos</h4>
+                    <div class="flex gap-2">
+                        <input 
+                            type="date" 
+                            id="blockDate"
+                            class="flex-1 px-3 py-2 border rounded-lg"
+                        >
+                        <button 
+                            onclick="toggleDateAvailability()"
+                            id="blockDateBtn"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        >
+                            🚫 Bloquear
+                        </button>
+                    </div>
+                    
+                    <!-- Lista de dias bloqueados -->
+                    <div id="blockedDatesList" class="mt-3 max-h-40 overflow-y-auto">
+                        <!-- Será preenchido via JS -->
+                    </div>
+                </div>
+
+                <!-- Configuração de Horários -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">🕐 Alterar Horários</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Abertura</label>
+                            <select id="newOpenTime" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="7">07:00</option>
+                                <option value="8">08:00</option>
+                                <option value="9">09:00</option>
+                                <option value="10">10:00</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Fechamento</label>
+                            <select id="newCloseTime" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="17">17:00</option>
+                                <option value="18">18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                                <option value="21">21:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button 
+                        onclick="updateSchedule()"
+                        class="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                    >
+                        💾 Salvar Horários
+                    </button>
+                </div>
+
+                <!-- Dias da Semana -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">📆 Dias de Funcionamento</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-1" class="modal-day-checkbox" value="1">
+                            <span>Segunda</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-2" class="modal-day-checkbox" value="2">
+                            <span>Terça</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-3" class="modal-day-checkbox" value="3">
+                            <span>Quarta</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-4" class="modal-day-checkbox" value="4">
+                            <span>Quinta</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-5" class="modal-day-checkbox" value="5">
+                            <span>Sexta</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-6" class="modal-day-checkbox" value="6">
+                            <span>Sábado</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="modal-day-0" class="modal-day-checkbox" value="0">
+                            <span>Domingo</span>
+                        </label>
+                    </div>
+                    <button 
+                        onclick="updateWorkingDays()"
+                        class="mt-3 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+                    >
+                        💾 Salvar Dias
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes do Agendamento -->
+    <div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        📋 Detalhes do Agendamento
+                    </h3>
+                    <button 
+                        onclick="closeBookingModal()"
+                        class="text-gray-500 hover:text-gray-700"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div id="bookingDetails" class="space-y-3">
+                    <!-- Será preenchido via JS -->
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button 
+                        onclick="sendWhatsAppFromModal()"
+                        class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+                    >
+                        💬 WhatsApp
+                    </button>
+                    <button 
+                        onclick="cancelBookingFromModal()"
+                        class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                    >
+                        ❌ Cancelar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -103,14 +347,34 @@
         let barberSlug = '';
         let barberData = null;
         let allBookings = [];
+        let currentDate = new Date();
+        let currentView = 'calendar';
+        let selectedBooking = null;
+        let blockedDates = [];
 
-        // Pega o slug da URL ou solicita
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', async () => {
+            barberSlug = getBarberSlug();
+            if (barberSlug) {
+                await loadBarberData();
+                await loadBookings();
+                await loadBlockedDates();
+                generateCalendar();
+                updateStatistics();
+                
+                // Define data de hoje no filtro
+                document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+                document.getElementById('blockDate').min = new Date().toISOString().split('T')[0];
+            }
+        });
+
+        // Pega o slug da URL
         function getBarberSlug() {
             const urlParams = new URLSearchParams(window.location.search);
             const slug = urlParams.get('slug');
             
             if (!slug) {
-                const inputSlug = prompt('Digite o código do seu negócio (ex: barbearia-do-joao):');
+                const inputSlug = prompt('Digite o código do seu negócio:');
                 if (inputSlug) {
                     window.location.href = `?slug=${inputSlug}`;
                 } else {
@@ -131,9 +395,21 @@
                 if (result.success) {
                     barberData = result.data;
                     document.getElementById('barberName').textContent = barberData.businessName;
+                    document.title = `Painel - ${barberData.businessName}`;
                     
                     const bookingUrl = window.location.origin + '/' + barberSlug;
                     document.getElementById('bookingLink').textContent = bookingUrl;
+
+                    // Preencher modal com dados atuais
+                    document.getElementById('newOpenTime').value = barberData.openTime;
+                    document.getElementById('newCloseTime').value = barberData.closeTime;
+                    
+                    if (barberData.workingDays) {
+                        barberData.workingDays.forEach(day => {
+                            const checkbox = document.getElementById(`modal-day-${day}`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
                 } else {
                     alert('Barbeiro não encontrado!');
                     window.location.href = '/setup.html';
@@ -145,65 +421,115 @@
 
         // Carrega agendamentos
         async function loadBookings() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('bookingsList').classList.add('hidden');
-            document.getElementById('noBookings').classList.add('hidden');
-            
             try {
-                const dateFilter = document.getElementById('dateFilter').value;
-                const statusFilter = document.getElementById('statusFilter').value;
+                const dateFilter = document.getElementById('dateFilter')?.value;
+                const statusFilter = document.getElementById('statusFilter')?.value;
                 
-                // Monta a URL com os filtros
                 let url = `/api/barbers/${barberSlug}/bookings`;
                 const params = new URLSearchParams();
                 
-                if (dateFilter) {
-                    params.append('date', dateFilter);
-                }
+                if (dateFilter) params.append('date', dateFilter);
+                if (statusFilter) params.append('status', statusFilter);
                 
-                if (statusFilter) {
-                    params.append('status', statusFilter);
-                }
+                if (params.toString()) url += '?' + params.toString();
                 
-                if (params.toString()) {
-                    url += '?' + params.toString();
-                }
-                
-                // Busca os dados REAIS do servidor
                 const response = await fetch(url);
                 const result = await response.json();
                 
                 if (result.success) {
                     allBookings = result.data;
-                    displayBookings(allBookings);
-                    updateStatistics(allBookings);
-                } else {
-                    throw new Error(result.error || 'Erro ao buscar agendamentos');
+                    if (currentView === 'list') {
+                        displayBookingsList(allBookings);
+                    } else {
+                        generateCalendar();
+                    }
+                    updateStatistics();
                 }
-                
             } catch (error) {
                 console.error('Erro ao carregar agendamentos:', error);
-                alert('Erro ao carregar agendamentos: ' + error.message);
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
             }
         }
 
-        // Exibe agendamentos
-        function displayBookings(bookings) {
+        // Gera o calendário
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonth = document.getElementById('currentMonth');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Atualizar título do mês
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            currentMonth.textContent = `${monthNames[month]} ${year}`;
+            
+            // Limpar calendário
+            calendarGrid.innerHTML = '';
+            
+            // Primeiro dia do mês e último dia
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // Gerar 42 dias (6 semanas)
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day p-2';
+                
+                // Classes condicionais
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isCurrentMonth = date.getMonth() === month;
+                const dayOfWeek = date.getDay();
+                const isWorkingDay = barberData?.workingDays?.includes(dayOfWeek);
+                
+                if (isToday) dayElement.classList.add('today');
+                if (!isCurrentMonth) dayElement.classList.add('other-month');
+                if (!isWorkingDay) dayElement.style.backgroundColor = '#f3f4f6';
+                
+                // Número do dia
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'font-medium text-sm mb-1';
+                dayNumber.textContent = date.getDate();
+                dayElement.appendChild(dayNumber);
+                
+                // Agendamentos do dia
+                const dateStr = date.toISOString().split('T')[0];
+                const dayBookings = allBookings.filter(booking => booking.date === dateStr);
+                
+                dayBookings.forEach(booking => {
+                    const bookingEl = document.createElement('div');
+                    bookingEl.className = `booking-item ${booking.status === 'confirmed' ? 'booking-confirmed' : 'booking-cancelled'}`;
+                    bookingEl.textContent = `${booking.time} - ${booking.customerName}`;
+                    bookingEl.onclick = () => showBookingDetails(booking);
+                    dayElement.appendChild(bookingEl);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // Exibe lista de agendamentos
+        function displayBookingsList(bookings) {
             const bookingsList = document.getElementById('bookingsList');
+            const noBookings = document.getElementById('noBookings');
+            
             bookingsList.innerHTML = '';
             
             if (bookings.length === 0) {
-                document.getElementById('noBookings').classList.remove('hidden');
+                noBookings.classList.remove('hidden');
                 return;
             }
             
-            bookingsList.classList.remove('hidden');
+            noBookings.classList.add('hidden');
             
             bookings.forEach(booking => {
                 const bookingCard = document.createElement('div');
-                bookingCard.className = 'border rounded-lg p-4 hover:bg-gray-50';
+                bookingCard.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer';
+                bookingCard.onclick = () => showBookingDetails(booking);
                 
                 const statusColor = booking.status === 'confirmed' ? 'green' : 'red';
                 const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
@@ -214,19 +540,13 @@
                             <h3 class="font-semibold text-gray-800">${booking.customerName}</h3>
                             <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
                             <p class="text-sm text-gray-600">📅 ${formatDate(booking.date)} às ${booking.time}</p>
+                            ${booking.serviceName ? `<p class="text-sm text-gray-600">✂️ ${booking.serviceName} (${booking.serviceDuration}min)</p>` : ''}
                         </div>
                         <div class="text-right">
                             <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
                                 ${statusText}
                             </span>
-                            <div class="mt-2">
-                                <button 
-                                    onclick="sendWhatsApp('${booking.customerPhone}', '${booking.customerName}', '${booking.date}', '${booking.time}')"
-                                    class="text-green-600 hover:text-green-800"
-                                >
-                                    💬 WhatsApp
-                                </button>
-                            </div>
+                            ${booking.servicePrice ? `<p class="text-sm font-medium text-green-600 mt-1">R$ ${booking.servicePrice.toFixed(2)}</p>` : ''}
                         </div>
                     </div>
                 `;
@@ -235,40 +555,144 @@
             });
         }
 
-        // Formata data
+        // Atualiza estatísticas
+        function updateStatistics() {
+            const today = new Date().toISOString().split('T')[0];
+            const startOfWeek = new Date();
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            
+            const todayBookings = allBookings.filter(b => b.date === today && b.status === 'confirmed');
+            const weekBookings = allBookings.filter(b => {
+                const bookingDate = new Date(b.date);
+                return bookingDate >= startOfWeek && b.status === 'confirmed';
+            });
+            const monthBookings = allBookings.filter(b => {
+                const bookingDate = new Date(b.date);
+                return bookingDate >= startOfMonth && b.status === 'confirmed';
+            });
+            
+            const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.servicePrice || 0), 0);
+            
+            document.getElementById('todayCount').textContent = todayBookings.length;
+            document.getElementById('weekCount').textContent = weekBookings.length;
+            document.getElementById('monthCount').textContent = monthBookings.length;
+            document.getElementById('monthRevenue').textContent = `R$ ${monthRevenue.toFixed(2)}`;
+        }
+
+        // Navegação do calendário
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar();
+        }
+
+        // Alternar visualização
+        function toggleView() {
+            const calendarView = document.getElementById('calendarView');
+            const listView = document.getElementById('listView');
+            const toggleBtn = document.getElementById('viewToggle');
+            
+            if (currentView === 'calendar') {
+                currentView = 'list';
+                calendarView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                toggleBtn.textContent = '📅 Ver Calendário';
+                displayBookingsList(allBookings);
+            } else {
+                currentView = 'calendar';
+                calendarView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                toggleBtn.textContent = '📋 Ver Lista';
+                generateCalendar();
+            }
+        }
+
+        // Modal de disponibilidade
+        function openAvailabilityModal() {
+            document.getElementById('availabilityModal').classList.remove('hidden');
+        }
+
+        function closeAvailabilityModal() {
+            document.getElementById('availabilityModal').classList.add('hidden');
+        }
+
+        // Modal de detalhes do agendamento
+        function showBookingDetails(booking) {
+            selectedBooking = booking;
+            const modal = document.getElementById('bookingModal');
+            const details = document.getElementById('bookingDetails');
+            
+            const statusColor = booking.status === 'confirmed' ? 'text-green-600' : 'text-red-600';
+            const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
+            
+            details.innerHTML = `
+                <div class="border-b pb-3 mb-3">
+                    <h4 class="font-medium text-gray-800">${booking.customerName}</h4>
+                    <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <p><strong>Data:</strong> ${formatDate(booking.date)}</p>
+                    <p><strong>Horário:</strong> ${booking.time}</p>
+                    ${booking.serviceName ? `<p><strong>Serviço:</strong> ${booking.serviceName}</p>` : ''}
+                    ${booking.serviceDuration ? `<p><strong>Duração:</strong> ${booking.serviceDuration} minutos</p>` : ''}
+                    ${booking.servicePrice ? `<p><strong>Preço:</strong> R$ ${booking.servicePrice.toFixed(2)}</p>` : ''}
+                    <p><strong>Status:</strong> <span class="${statusColor}">${statusText}</span></p>
+                    <p><strong>Criado em:</strong> ${new Date(booking.createdAt).toLocaleString('pt-BR')}</p>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            selectedBooking = null;
+        }
+
+        // Funções auxiliares
         function formatDate(dateString) {
             const date = new Date(dateString + 'T12:00:00');
             return date.toLocaleDateString('pt-BR');
         }
 
-        // Atualiza estatísticas
-        function updateStatistics(bookings) {
-            const today = new Date().toISOString().split('T')[0];
-            const todayBookings = bookings.filter(b => b.date === today).length;
+        function sendWhatsAppFromModal() {
+            if (!selectedBooking) return;
             
-            document.getElementById('todayCount').textContent = todayBookings;
-            document.getElementById('weekCount').textContent = bookings.length; // Simplificado
-            document.getElementById('monthCount').textContent = bookings.length; // Simplificado
-        }
-
-        // Envia mensagem WhatsApp
-        function sendWhatsApp(phone, name, date, time) {
-            const message = `Olá ${name}! Lembrando do seu agendamento para ${formatDate(date)} às ${time}. Até lá! 😊`;
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            const message = `Olá ${selectedBooking.customerName}! Confirming seu agendamento para ${formatDate(selectedBooking.date)} às ${selectedBooking.time}. Até lá! 😊`;
+            const whatsappUrl = `https://wa.me/${selectedBooking.customerPhone}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
 
-        // Inicializa
-        window.addEventListener('DOMContentLoaded', async () => {
-            barberSlug = getBarberSlug();
-            if (barberSlug) {
-                await loadBarberData();
-                await loadBookings();
-                
-                // Define data de hoje no filtro
-                document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
-            }
-        });
+        function exportBookings() {
+            // Implementar exportação de dados
+            alert('Funcionalidade de exportação em desenvolvimento!');
+        }
+
+        // Placeholder para outras funções
+        function loadBlockedDates() {
+            // Implementar carregamento de datas bloqueadas
+        }
+
+        function toggleDateAvailability() {
+            // Implementar bloqueio/desbloqueio de datas
+            alert('Funcionalidade em desenvolvimento!');
+        }
+
+        function updateSchedule() {
+            // Implementar atualização de horários
+            alert('Funcionalidade em desenvolvimento!');
+        }
+
+        function updateWorkingDays() {
+            // Implementar atualização de dias de funcionamento
+            alert('Funcionalidade em desenvolvimento!');
+        }
+
+        function cancelBookingFromModal() {
+            // Implementar cancelamento de agendamento
+            alert('Funcionalidade em desenvolvimento!');
+        }
     </script>
 </body>
 </html>
