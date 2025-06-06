@@ -43,25 +43,22 @@
         </div>
 
         <!-- Seletor de Data -->
-        <!-- SUBSTITUA a seção "Seletor de Data" no agendar.html por esta versão: -->
-
-        <!-- Seletor de Data -->
         <div class="bg-white rounded-lg shadow-md p-4 mb-4">
-        <h3 class="font-medium text-gray-700 mb-3">
-            📅 Escolha o dia
-        </h3>
-        
-        <!-- Container com scroll horizontal -->
-        <div class="overflow-x-auto pb-2">
-            <div class="grid grid-flow-col auto-cols-max gap-2 min-w-max" id="daySelector">
-                <!-- Dias serão gerados via JavaScript -->
+            <h3 class="font-medium text-gray-700 mb-3">
+                📅 Escolha o dia
+            </h3>
+            
+            <!-- Container com scroll horizontal -->
+            <div class="overflow-x-auto pb-2">
+                <div class="grid grid-flow-col auto-cols-max gap-2 min-w-max" id="daySelector">
+                    <!-- Dias serão gerados via JavaScript -->
+                </div>
             </div>
-        </div>
-        
-        <!-- Dica de navegação -->
-        <p class="text-xs text-gray-500 mt-2 text-center">
-            👆 Deslize para ver mais dias disponíveis
-        </p>
+            
+            <!-- Dica de navegação -->
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                👆 Deslize para ver mais dias disponíveis
+            </p>
         </div>
 
         <!-- Horários Disponíveis -->
@@ -248,61 +245,65 @@
             document.getElementById('mainContent').classList.remove('hidden');
         }
 
-        // Gera os próximos dias - VERSÃO ATUALIZADA
-
+        // ✅ FUNÇÃO CORRIGIDA: Gera os próximos dias
         function generateDays() {
-        const daySelector = document.getElementById('daySelector');
-        daySelector.innerHTML = '';
-        
-        const today = new Date();
-        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        
-        let availableDaysCount = 0;
-        let firstAvailableButton = null;
-        
-        // AUMENTADO: Agora verifica 45 dias para encontrar até 21 dias disponíveis
-        for (let i = 0; i < 45; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
+            const daySelector = document.getElementById('daySelector');
+            daySelector.innerHTML = '';
             
-            const dayOfWeek = date.getDay();
+            const today = new Date();
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
             
-            // Verificar se é um dia de funcionamento
-            if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
-                continue;
+            let availableDaysCount = 0;
+            let firstAvailableButton = null;
+            let daysChecked = 0;
+            const maxDaysToCheck = 60; // Máximo de dias para verificar
+            const maxDaysToShow = 21;  // Máximo de dias disponíveis para mostrar
+            
+            // ✅ CORREÇÃO: Loop mais eficiente
+            while (availableDaysCount < maxDaysToShow && daysChecked < maxDaysToCheck) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + daysChecked);
+                
+                const dayOfWeek = date.getDay();
+                
+                daysChecked++; // ✅ SEMPRE incrementar o contador
+                
+                // Verificar se é um dia de funcionamento
+                if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
+                    continue; // Pula para o próximo dia
+                }
+                
+                const dayElement = document.createElement('button');
+                dayElement.className = 'p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-center min-w-[80px]';
+                
+                // Destacar hoje e amanhã
+                let dayLabel = days[date.getDay()];
+                if (daysChecked === 1) dayLabel = 'Hoje';
+                else if (daysChecked === 2) dayLabel = 'Amanhã';
+                
+                dayElement.innerHTML = `
+                    <div class="text-xs text-gray-500">${dayLabel}</div>
+                    <div class="font-medium">${date.getDate()}</div>
+                    <div class="text-xs text-gray-500">${months[date.getMonth()]}</div>
+                `;
+                dayElement.onclick = () => selectDate(date, dayElement);
+                
+                daySelector.appendChild(dayElement);
+                
+                if (!firstAvailableButton) {
+                    firstAvailableButton = dayElement;
+                }
+                
+                availableDaysCount++;
             }
-            
-            const dayElement = document.createElement('button');
-            dayElement.className = 'p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-center';
-            
-            // Destacar hoje e amanhã
-            let dayLabel = days[date.getDay()];
-            if (i === 0) dayLabel = 'Hoje';
-            else if (i === 1) dayLabel = 'Amanhã';
-            
-            dayElement.innerHTML = `
-                <div class="text-xs text-gray-500">${dayLabel}</div>
-                <div class="font-medium">${date.getDate()}</div>
-                <div class="text-xs text-gray-500">${months[date.getMonth()]}</div>
-            `;
-            dayElement.onclick = () => selectDate(date, dayElement);
-            
-            daySelector.appendChild(dayElement);
-            
-            if (!firstAvailableButton) {
-                firstAvailableButton = dayElement;
+        
+            // Selecionar o primeiro dia disponível
+            if (firstAvailableButton) {
+                firstAvailableButton.click();
             }
-            
-            availableDaysCount++;
-            if (availableDaysCount >= 21) break; // Parar quando tiver 21 dias disponíveis
         }
-    
-    // Selecionar o primeiro dia disponível
-    if (firstAvailableButton) {
-        firstAvailableButton.click();
-    }
-}
+
         // Seleciona uma data
         async function selectDate(date, element) {
             selectedDate = date;
@@ -323,8 +324,7 @@
             await loadAvailableSlots();
         }
 
-        // Carrega horários disponíveis - VERSÃO ATUALIZADA
-
+        // Carrega horários disponíveis
         async function loadAvailableSlots() {
             const dateStr = selectedDate.toISOString().split('T')[0];
             
@@ -391,7 +391,7 @@
             noSlotsMessage.textContent = message;
         }
 
-        // Gera os horários disponíveis - VERSÃO ATUALIZADA
+        // ✅ FUNÇÃO CORRIGIDA: Gera os horários disponíveis
         function generateTimeSlots() {
             const timeSlotsContainer = document.getElementById('timeSlots');
             const noSlotsMessage = document.getElementById('noSlotsMessage');
@@ -416,30 +416,36 @@
             const serviceDuration = selectedService ? selectedService.duration : (config.services[0]?.duration || 30);
             const bufferTime = config.bufferTime || 0;
             
-            // Gerar slots
+            // ✅ CORREÇÃO: Melhor geração de slots
             for (let hour = config.openTime; hour < config.closeTime; hour++) {
                 for (let minute = 0; minute < 60; minute += serviceDuration + bufferTime) {
+                    // ✅ CORREÇÃO: Criar data com timezone local
                     const slotDate = new Date(selectedDate);
                     slotDate.setHours(hour, minute, 0, 0);
                     
-                    // Verificar antecedência mínima
+                    // ✅ CORREÇÃO: Verificação de antecedência mais robusta
                     const hoursUntilSlot = (slotDate - now) / (1000 * 60 * 60);
                     if (hoursUntilSlot < config.minAdvanceTime) continue;
                     
-                    // Verificar horário de almoço
-                    if (config.hasLunchBreak) {
-                        const slotTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                        if (slotTime >= config.lunchStart && slotTime < config.lunchEnd) {
+                    // ✅ CORREÇÃO: Verificação de horário de almoço melhorada
+                    if (config.hasLunchBreak && config.lunchStart && config.lunchEnd) {
+                        const slotTime = hour + (minute / 60); // Converte para decimal
+                        const lunchStartDecimal = convertTimeToDecimal(config.lunchStart);
+                        const lunchEndDecimal = convertTimeToDecimal(config.lunchEnd);
+                        
+                        if (slotTime >= lunchStartDecimal && slotTime < lunchEndDecimal) {
                             continue;
                         }
                     }
                     
                     // Verificar se o slot completo cabe no horário de funcionamento
-                    const endHour = hour;
-                    const endMinute = minute + serviceDuration;
-                    const adjustedEndHour = endHour + Math.floor(endMinute / 60);
+                    const endMinutes = minute + serviceDuration;
+                    const endHour = hour + Math.floor(endMinutes / 60);
+                    const adjustedEndMinute = endMinutes % 60;
                     
-                    if (adjustedEndHour > config.closeTime) continue;
+                    if (endHour > config.closeTime || (endHour === config.closeTime && adjustedEndMinute > 0)) {
+                        continue;
+                    }
                     
                     const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                     
@@ -454,8 +460,7 @@
             }
             
             if (slots.length === 0) {
-                noSlotsMessage.classList.remove('hidden');
-                timeSlotsContainer.classList.add('hidden');
+                showNoSlotsMessage();
             } else {
                 noSlotsMessage.classList.add('hidden');
                 timeSlotsContainer.classList.remove('hidden');
@@ -475,6 +480,13 @@
                     timeSlotsContainer.appendChild(slotElement);
                 });
             }
+        }
+
+        // ✅ FUNÇÃO AUXILIAR: Converte horário "HH:MM" para decimal
+        function convertTimeToDecimal(timeString) {
+            if (!timeString) return 0;
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return hours + (minutes / 60);
         }
 
         // Seleciona um horário
@@ -524,7 +536,7 @@
             confirmSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Confirma o agendamento - VERSÃO ATUALIZADA
+        // Confirma o agendamento
         async function confirmBooking() {
             const customerName = document.getElementById('customerName').value.trim();
             const customerPhone = document.getElementById('customerPhone').value.trim();
