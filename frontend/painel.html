@@ -861,6 +861,7 @@
                 
                 if (result.success) {
                     alert('✅ Agendamento criado com sucesso!');
+                    window.location.reload();
                     closeAddBookingModal();
                     
                     // ✅ SIMPLIFICADO: loadBookings() já cuida de tudo
@@ -1149,6 +1150,7 @@
                 
                 if (result.success) {
                     alert('✅ Agendamento cancelado com sucesso!');
+                    window.location.reload();
                     closeBookingModal();
                     
                     // ✅ SIMPLIFICADO: loadBookings() já cuida de tudo
