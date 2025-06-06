@@ -447,66 +447,26 @@
                     <!-- Será preenchido via JS -->
                 </div>
 
-                <!-- ✅ BOTÕES ATUALIZADOS COM DELETAR -->
-                <div class="mt-6 grid grid-cols-1 gap-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <button 
-                            onclick="sendWhatsAppFromModal()"
-                            class="bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
-                        >
-                            💬 WhatsApp
-                        </button>
-                        <button 
-                            onclick="cancelBookingFromModal()"
-                            class="bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
-                        >
-                            ❌ Cancelar
-                        </button>
-                    </div>
-                    <!-- ✅ NOVO BOTÃO: Deletar -->
+                <!-- ✅ BOTÕES SIMPLIFICADOS -->
+                <div class="mt-6 grid grid-cols-2 gap-3">
                     <button 
-                        onclick="deleteBookingFromModal()"
-                        class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
+                        onclick="sendWhatsAppFromModal()"
+                        class="bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
                     >
-                        🗑️ Deletar Agendamento
+                        💬 WhatsApp
+                    </button>
+                    <button 
+                        onclick="cancelBookingFromModal()"
+                        class="bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+                    >
+                        ❌ Cancelar Agendamento
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ✅ MODAL DE CONFIRMAÇÃO -->
-    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
-            <div class="p-6 text-center">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-2xl">⚠️</span>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                    Confirmar Exclusão
-                </h3>
-                <p class="text-gray-600 mb-6" id="confirmMessage">
-                    Tem certeza que deseja deletar este agendamento? Esta ação não pode ser desfeita.
-                </p>
-                
-                <div class="flex gap-3">
-                    <button 
-                        onclick="closeConfirmModal()"
-                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-                    >
-                        Cancelar
-                    </button>
-                    <button 
-                        onclick="confirmDelete()"
-                        id="confirmDeleteBtn"
-                        class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
-                    >
-                        Deletar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- ✅ MODAL DE CONFIRMAÇÃO REMOVIDO (não mais necessário) -->
 
     <script>
         let barberSlug = '';
@@ -516,7 +476,7 @@
         let currentView = 'calendar';
         let selectedBooking = null;
         let blockedDates = [];
-        let bookingToDelete = null; // ✅ Para armazenar agendamento a ser deletado
+        // ✅ REMOVIDO: bookingToDelete (não mais necessário)
 
         // Inicialização
         window.addEventListener('DOMContentLoaded', async () => {
@@ -624,12 +584,16 @@
                 
                 if (result.success) {
                     allBookings = result.data;
+                    
+                    // ✅ CORRIGIDO: Atualizar interface baseado na visualização atual
                     if (currentView === 'list') {
                         displayBookingsList(allBookings);
                     } else {
                         generateCalendar();
                     }
                     updateStatistics();
+                    
+                    console.log(`✅ ${allBookings.length} agendamentos carregados e interface atualizada`);
                 }
             } catch (error) {
                 console.error('Erro ao carregar agendamentos:', error);
@@ -887,7 +851,11 @@
                 if (result.success) {
                     alert('✅ Agendamento criado com sucesso!');
                     closeAddBookingModal();
-                    await loadBookings(); // Recarregar agendamentos
+                    
+                    // ✅ CORRIGIDO: Atualizar TUDO após criar agendamento
+                    await loadBookings();
+                    generateCalendar();
+                    updateStatistics();
                 } else {
                     throw new Error(result.error || 'Erro ao criar agendamento');
                 }
@@ -1096,57 +1064,11 @@
             selectedBooking = null;
         }
 
-        // ✅ NOVA FUNÇÃO: Deletar agendamento do modal
-        function deleteBookingFromModal() {
-            if (!selectedBooking) return;
-            
-            bookingToDelete = selectedBooking;
-            
-            const confirmMessage = document.getElementById('confirmMessage');
-            confirmMessage.textContent = `Tem certeza que deseja deletar o agendamento de ${selectedBooking.customerName} para ${formatDate(selectedBooking.date)} às ${selectedBooking.time}?`;
-            
-            document.getElementById('confirmModal').classList.remove('hidden');
-        }
-
-        // ✅ NOVA FUNÇÃO: Fechar modal de confirmação
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            bookingToDelete = null;
-        }
-
-        // ✅ NOVA FUNÇÃO: Confirmar deleção
-        async function confirmDelete() {
-            if (!bookingToDelete) return;
-            
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            const originalText = confirmBtn.textContent;
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = 'Deletando...';
-            
-            try {
-                const response = await fetch(`/api/bookings/${bookingToDelete.bookingId}`, {
-                    method: 'DELETE'
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('✅ Agendamento deletado com sucesso!');
-                    closeConfirmModal();
-                    closeBookingModal();
-                    await loadBookings(); // Recarregar agendamentos
-                } else {
-                    throw new Error(result.error || 'Erro ao deletar agendamento');
-                }
-                
-            } catch (error) {
-                console.error('Erro ao deletar agendamento:', error);
-                alert('❌ Erro ao deletar agendamento: ' + error.message);
-            } finally {
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = originalText;
-            }
-        }
+        // ✅ FUNÇÃO REMOVIDA: deleteBookingFromModal (não mais necessária)
+        
+        // ✅ FUNÇÃO REMOVIDA: closeConfirmModal (não mais necessária)
+        
+        // ✅ FUNÇÃO REMOVIDA: confirmDelete (não mais necessária)
 
         function formatDate(dateString) {
             const date = new Date(dateString + 'T12:00:00');
@@ -1196,7 +1118,11 @@
                 if (result.success) {
                     alert('✅ Agendamento cancelado com sucesso!');
                     closeBookingModal();
-                    await loadBookings(); // Recarregar agendamentos
+                    
+                    // ✅ CORRIGIDO: Atualizar TUDO após cancelar agendamento
+                    await loadBookings();
+                    generateCalendar();
+                    updateStatistics();
                 } else {
                     throw new Error(result.error || 'Erro ao cancelar agendamento');
                 }
