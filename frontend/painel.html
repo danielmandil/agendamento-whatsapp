@@ -1786,5 +1786,124 @@ async function updateBarberData(event) {
             }
         }
     </script>
+
+<!-- Adicione este código temporariamente no final do painel.html, antes do </body> -->
+
+<script>
+    // CÓDIGO DE DEBUG - REMOVER APÓS RESOLVER O PROBLEMA
+    
+    // Verificar se a função existe
+    console.log('🔍 Verificando funções...');
+    console.log('openNewBookingModal existe?', typeof openNewBookingModal !== 'undefined');
+    console.log('barberData existe?', typeof barberData !== 'undefined');
+    console.log('barberSlug existe?', typeof barberSlug !== 'undefined');
+    
+    // Verificar se o modal existe no DOM
+    console.log('Modal existe no DOM?', document.getElementById('newBookingModal') !== null);
+    
+    // Função de debug para abrir o modal
+    function debugOpenModal() {
+        console.log('🚀 Tentando abrir modal...');
+        
+        // Verificar se o modal existe
+        const modal = document.getElementById('newBookingModal');
+        if (!modal) {
+            console.error('❌ Modal não encontrado no DOM!');
+            alert('Modal não encontrado! Verifique se o HTML do modal foi adicionado.');
+            return;
+        }
+        
+        // Verificar se barberData existe
+        if (typeof barberData === 'undefined') {
+            console.error('❌ barberData não está definido!');
+            alert('Dados do barbeiro não carregados!');
+            return;
+        }
+        
+        try {
+            // Tentar remover a classe hidden
+            modal.classList.remove('hidden');
+            console.log('✅ Modal deveria estar visível agora');
+            
+            // Verificar se populateServices existe e chamar
+            if (typeof populateServices === 'function') {
+                populateServices();
+                console.log('✅ Serviços populados');
+            } else {
+                console.error('❌ Função populateServices não encontrada');
+            }
+            
+            // Definir data mínima
+            const dateInput = document.getElementById('manualDate');
+            if (dateInput) {
+                dateInput.min = new Date().toISOString().split('T')[0];
+                console.log('✅ Data mínima definida');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao abrir modal:', error);
+            alert('Erro: ' + error.message);
+        }
+    }
+    
+    // Verificar erros no console quando a página carrega
+    window.addEventListener('error', function(event) {
+        console.error('❌ Erro JavaScript:', event.error);
+    });
+    
+    // Adicionar botão de teste temporário
+    document.addEventListener('DOMContentLoaded', function() {
+        // Criar botão de debug
+        const debugBtn = document.createElement('button');
+        debugBtn.textContent = '🐛 Debug Modal';
+        debugBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: red; color: white; padding: 10px; border-radius: 5px; z-index: 9999;';
+        debugBtn.onclick = debugOpenModal;
+        document.body.appendChild(debugBtn);
+        
+        console.log('🔍 Estado inicial:');
+        console.log('- Modal no DOM:', !!document.getElementById('newBookingModal'));
+        console.log('- Função openNewBookingModal:', typeof openNewBookingModal);
+        console.log('- barberData:', barberData);
+    });
+    </script>
+    
+    <!-- Versão simplificada da função para teste -->
+    <script>
+    // Função simplificada caso a original não esteja funcionando
+    function openNewBookingModalSimple() {
+        console.log('Usando versão simplificada...');
+        const modal = document.getElementById('newBookingModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            
+            // Preencher serviços manualmente para teste
+            const serviceSelect = document.getElementById('manualService');
+            if (serviceSelect && barberData && barberData.services) {
+                serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+                barberData.services.forEach((service, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${service.name} - ${service.duration}min - R$ ${service.price.toFixed(2)}`;
+                    serviceSelect.appendChild(option);
+                });
+            }
+            
+            // Definir data mínima
+            const dateInput = document.getElementById('manualDate');
+            if (dateInput) {
+                dateInput.min = new Date().toISOString().split('T')[0];
+            }
+        } else {
+            alert('Modal não encontrado!');
+        }
+    }
+    
+    // Se a função original não existir, criar uma
+    if (typeof openNewBookingModal === 'undefined') {
+        window.openNewBookingModal = openNewBookingModalSimple;
+        console.log('✅ Função openNewBookingModal criada');
+    }
+    </script>
+
 </body>
 </html>
