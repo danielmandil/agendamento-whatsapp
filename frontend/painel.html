@@ -62,10 +62,10 @@
                         ➕ Novo Agendamento
                     </button>
                     <button 
-                        onclick="openAvailabilityModal()"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                    >
-                        ⚙️ Configurar Disponibilidade
+                    onclick="openConfigModal()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                    ⚙️ Configurações Completas
                     </button>
                     <button 
                         onclick="toggleView()"
@@ -311,121 +311,538 @@
         </div>
     </div>
 
-    <!-- Modal de Configuração de Disponibilidade -->
-    <div id="availabilityModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">
-                        ⚙️ Configurar Disponibilidade
-                    </h3>
-                    <button 
-                        onclick="closeAvailabilityModal()"
-                        class="text-gray-500 hover:text-gray-700"
-                    >
-                        ✕
-                    </button>
+ <!-- Este código deve ser adicionado ao painel.html -->
+
+<!-- Modal de Configuração Completa (substitui o modal de disponibilidade existente) -->
+<div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header do Modal -->
+        <div class="bg-blue-500 text-white p-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-bold">
+                    ⚙️ Configurações Completas
+                </h3>
+                <button 
+                    onclick="closeConfigModal()"
+                    class="text-white hover:text-gray-200 text-2xl"
+                >
+                    ✕
+                </button>
+            </div>
+            <p class="text-blue-100 mt-2">Atualize todas as informações do seu negócio</p>
+        </div>
+
+        <!-- Corpo do Modal com scroll -->
+        <div class="overflow-y-auto max-h-[calc(90vh-180px)]">
+            <form id="updateForm" onsubmit="updateBarberData(event)">
+                <!-- Step 1: Informações Básicas -->
+                <div class="p-6 border-b">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                        1️⃣ Informações Básicas
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                Nome da Barbearia *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="updateBusinessName"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required
+                            >
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                WhatsApp Business *
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="updateWhatsapp"
+                                placeholder="31999887766"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                Email (novo campo)
+                            </label>
+                            <input 
+                                type="email" 
+                                id="updateEmail"
+                                placeholder="seuemail@exemplo.com"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                Endereço
+                            </label>
+                            <input 
+                                type="text" 
+                                id="updateAddress"
+                                placeholder="Rua das Flores, 123 - Centro"
+                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            >
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Bloquear/Desbloquear Dias -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">📅 Bloquear Dias Específicos</h4>
-                    <div class="flex gap-2">
-                        <input 
-                            type="date" 
-                            id="blockDate"
-                            class="flex-1 px-3 py-2 border rounded-lg"
-                        >
-                        <button 
-                            onclick="toggleDateAvailability()"
-                            id="blockDateBtn"
-                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                        >
-                            🚫 Bloquear
-                        </button>
+                <!-- Step 2: Dias de Funcionamento -->
+                <div class="p-6 border-b">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                        2️⃣ Dias de Funcionamento
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-1" class="update-day-checkbox" value="1">
+                            <span class="font-medium">Segunda</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-2" class="update-day-checkbox" value="2">
+                            <span class="font-medium">Terça</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-3" class="update-day-checkbox" value="3">
+                            <span class="font-medium">Quarta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-4" class="update-day-checkbox" value="4">
+                            <span class="font-medium">Quinta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-5" class="update-day-checkbox" value="5">
+                            <span class="font-medium">Sexta</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-6" class="update-day-checkbox" value="6">
+                            <span class="font-medium">Sábado</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="update-day-0" class="update-day-checkbox" value="0">
+                            <span class="font-medium">Domingo</span>
+                        </label>
                     </div>
                     
-                    <!-- Lista de dias bloqueados -->
-                    <div id="blockedDatesList" class="mt-3 max-h-40 overflow-y-auto">
-                        <!-- Será preenchido via JS -->
+                    <!-- Configuração rápida -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm font-medium text-blue-800 mb-2">⚡ Configuração rápida:</p>
+                        <div class="space-x-2">
+                            <button type="button" onclick="setUpdateWorkingDays([1,2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sáb</button>
+                            <button type="button" onclick="setUpdateWorkingDays([1,2,3,4,5])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sex</button>
+                            <button type="button" onclick="setUpdateWorkingDays([2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Ter-Sáb</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Configuração de Horários -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">🕐 Alterar Horários</h4>
-                    <div class="grid grid-cols-2 gap-3">
+                <!-- Step 3: Horários -->
+                <div class="p-6 border-b">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                        3️⃣ Horários de Funcionamento
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">Abertura</label>
-                            <select id="newOpenTime" class="w-full px-3 py-2 border rounded-lg">
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🌅 Hora de abertura
+                            </label>
+                            <select id="updateOpenTime" class="w-full px-4 py-2 border rounded-lg">
                                 <option value="7">07:00</option>
                                 <option value="8">08:00</option>
                                 <option value="9">09:00</option>
                                 <option value="10">10:00</option>
                             </select>
                         </div>
+                        
                         <div>
-                            <label class="block text-sm text-gray-600 mb-1">Fechamento</label>
-                            <select id="newCloseTime" class="w-full px-3 py-2 border rounded-lg">
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🌆 Hora de fechamento
+                            </label>
+                            <select id="updateCloseTime" class="w-full px-4 py-2 border rounded-lg">
                                 <option value="17">17:00</option>
                                 <option value="18">18:00</option>
                                 <option value="19">19:00</option>
                                 <option value="20">20:00</option>
                                 <option value="21">21:00</option>
+                                <option value="22">22:00</option>
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- Horário de Almoço -->
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <label class="flex items-center space-x-2 mb-3">
+                            <input type="checkbox" id="updateHasLunchBreak" onchange="toggleUpdateLunchBreak()">
+                            <span class="font-medium">🍽️ Configurar pausa para almoço</span>
+                        </label>
+                        
+                        <div id="updateLunchBreakConfig" class="hidden grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Início da pausa</label>
+                                <select id="updateLunchStart" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="11:30">11:30</option>
+                                    <option value="12:00" selected>12:00</option>
+                                    <option value="12:30">12:30</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Fim da pausa</label>
+                                <select id="updateLunchEnd" class="w-full px-3 py-2 border rounded-lg">
+                                    <option value="13:00" selected>13:00</option>
+                                    <option value="13:30">13:30</option>
+                                    <option value="14:00">14:00</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Serviços -->
+                <div class="p-6 border-b">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                        4️⃣ Serviços e Preços
+                    </h4>
+                    
+                    <div id="updateServicesList" class="space-y-4 mb-6">
+                        <!-- Serviços serão carregados dinamicamente -->
+                    </div>
+                    
+                    <!-- Botões para adicionar serviços comuns -->
+                    <div class="mb-4">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Adicionar serviços comuns:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="addUpdateService('Barba', 20, 25)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">🧔 Barba</button>
+                            <button type="button" onclick="addUpdateService('Sobrancelha', 15, 15)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">👁️ Sobrancelha</button>
+                            <button type="button" onclick="addUpdateService('Corte + Barba', 45, 55)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✂️🧔 Corte + Barba</button>
+                            <button type="button" onclick="addUpdateService('Degradê', 40, 40)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✨ Degradê</button>
+                        </div>
+                    </div>
+                    
                     <button 
-                        onclick="updateSchedule()"
-                        class="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                        type="button"
+                        onclick="addUpdateService()"
+                        class="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600"
                     >
-                        💾 Salvar Horários
+                        ➕ Adicionar outro serviço personalizado
                     </button>
                 </div>
 
-                <!-- Dias da Semana -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">📆 Dias de Funcionamento</h4>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-1" class="modal-day-checkbox" value="1">
-                            <span>Segunda</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-2" class="modal-day-checkbox" value="2">
-                            <span>Terça</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-3" class="modal-day-checkbox" value="3">
-                            <span>Quarta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-4" class="modal-day-checkbox" value="4">
-                            <span>Quinta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-5" class="modal-day-checkbox" value="5">
-                            <span>Sexta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-6" class="modal-day-checkbox" value="6">
-                            <span>Sábado</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-0" class="modal-day-checkbox" value="0">
-                            <span>Domingo</span>
-                        </label>
+                <!-- Step 5: Configurações Avançadas -->
+                <div class="p-6 border-b">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                        5️⃣ Configurações de Agendamento
+                    </h4>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                ⏰ Antecedência mínima para agendamentos
+                            </label>
+                            <select id="updateMinAdvanceTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="0">Podem agendar na hora</option>
+                                <option value="1">Pelo menos 1 hora antes</option>
+                                <option value="2">Pelo menos 2 horas antes</option>
+                                <option value="24">Pelo menos 1 dia antes</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                🔢 Máximo de agendamentos por dia
+                            </label>
+                            <input 
+                                type="number" 
+                                id="updateMaxBookingsPerDay"
+                                placeholder="0 = sem limite"
+                                class="w-full px-4 py-2 border rounded-lg"
+                                min="0"
+                                value="0"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">
+                                ⏳ Intervalo entre atendimentos
+                            </label>
+                            <select id="updateBufferTime" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="0">Sem intervalo</option>
+                                <option value="5">5 minutos</option>
+                                <option value="10">10 minutos</option>
+                                <option value="15">15 minutos</option>
+                            </select>
+                        </div>
                     </div>
-                    <button 
-                        onclick="updateWorkingDays()"
-                        class="mt-3 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
-                    >
-                        💾 Salvar Dias
-                    </button>
                 </div>
+            </form>
+        </div>
+
+        <!-- Footer do Modal -->
+        <div class="bg-gray-50 p-6 border-t">
+            <div class="flex justify-end gap-3">
+                <button 
+                    type="button"
+                    onclick="closeConfigModal()"
+                    class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    type="submit"
+                    form="updateForm"
+                    class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                    💾 Salvar Todas as Alterações
+                </button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- JavaScript para o Modal -->
+<script>
+// Abrir modal de configurações
+function openConfigModal() {
+    document.getElementById('configModal').classList.remove('hidden');
+    loadCurrentData();
+}
+
+// Fechar modal de configurações
+function closeConfigModal() {
+    document.getElementById('configModal').classList.add('hidden');
+}
+
+// Carregar dados atuais do barbeiro no modal
+function loadCurrentData() {
+    if (!barberData) return;
+    
+    // Informações básicas
+    document.getElementById('updateBusinessName').value = barberData.businessName || '';
+    document.getElementById('updateWhatsapp').value = barberData.whatsapp || '';
+    document.getElementById('updateEmail').value = barberData.email || '';
+    document.getElementById('updateAddress').value = barberData.address || '';
+    
+    // Dias de funcionamento
+    document.querySelectorAll('.update-day-checkbox').forEach(cb => cb.checked = false);
+    if (barberData.workingDays) {
+        barberData.workingDays.forEach(day => {
+            const checkbox = document.getElementById(`update-day-${day}`);
+            if (checkbox) checkbox.checked = true;
+        });
+    }
+    
+    // Horários
+    document.getElementById('updateOpenTime').value = barberData.openTime || 8;
+    document.getElementById('updateCloseTime').value = barberData.closeTime || 18;
+    document.getElementById('updateBufferTime').value = barberData.bufferTime || 10;
+    
+    // Horário de almoço
+    if (barberData.hasLunchBreak) {
+        document.getElementById('updateHasLunchBreak').checked = true;
+        document.getElementById('updateLunchBreakConfig').classList.remove('hidden');
+        document.getElementById('updateLunchStart').value = barberData.lunchStart || '12:00';
+        document.getElementById('updateLunchEnd').value = barberData.lunchEnd || '13:00';
+    }
+    
+    // Configurações avançadas
+    document.getElementById('updateMinAdvanceTime').value = barberData.minAdvanceTime || 2;
+    document.getElementById('updateMaxBookingsPerDay').value = barberData.maxBookingsPerDay || 0;
+    
+    // Serviços
+    loadUpdateServices();
+}
+
+// Carregar serviços no modal
+function loadUpdateServices() {
+    const servicesList = document.getElementById('updateServicesList');
+    servicesList.innerHTML = '';
+    
+    if (barberData.services && barberData.services.length > 0) {
+        barberData.services.forEach((service, index) => {
+            const serviceElement = createUpdateServiceElement(service.name, service.duration, service.price, index === 0);
+            servicesList.appendChild(serviceElement);
+        });
+    } else {
+        // Serviço padrão
+        const serviceElement = createUpdateServiceElement('Corte masculino', 30, 35, true);
+        servicesList.appendChild(serviceElement);
+    }
+}
+
+// Criar elemento de serviço para o modal
+function createUpdateServiceElement(name = '', duration = 30, price = 0, isFirst = false) {
+    const serviceElement = document.createElement('div');
+    serviceElement.className = `update-service-item p-4 border-2 rounded-lg ${isFirst ? 'border-blue-200 bg-blue-50' : ''}`;
+    
+    serviceElement.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">✂️ Serviço</label>
+                <input 
+                    type="text" 
+                    placeholder="Nome do serviço"
+                    class="update-service-name w-full px-3 py-2 border rounded"
+                    value="${name}"
+                    ${isFirst ? 'required' : ''}
+                >
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">⏱️ Tempo</label>
+                <select class="update-service-duration w-full px-3 py-2 border rounded">
+                    <option value="15" ${duration === 15 ? 'selected' : ''}>15 min</option>
+                    <option value="20" ${duration === 20 ? 'selected' : ''}>20 min</option>
+                    <option value="30" ${duration === 30 ? 'selected' : ''}>30 min</option>
+                    <option value="40" ${duration === 40 ? 'selected' : ''}>40 min</option>
+                    <option value="45" ${duration === 45 ? 'selected' : ''}>45 min</option>
+                    <option value="60" ${duration === 60 ? 'selected' : ''}>1 hora</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">💰 Preço</label>
+                <input 
+                    type="number" 
+                    placeholder="0.00"
+                    class="update-service-price w-full px-3 py-2 border rounded"
+                    step="0.01"
+                    value="${price}"
+                >
+            </div>
+            <div class="flex items-end">
+                <button 
+                    type="button"
+                    onclick="removeUpdateService(this)"
+                    class="text-red-600 hover:text-red-800 text-sm"
+                    ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}
+                >
+                    🗑️ Remover
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return serviceElement;
+}
+
+// Adicionar serviço no modal
+function addUpdateService(name = '', duration = 30, price = 0) {
+    const servicesList = document.getElementById('updateServicesList');
+    const newService = createUpdateServiceElement(name, duration, price, false);
+    servicesList.appendChild(newService);
+}
+
+// Remover serviço no modal
+function removeUpdateService(button) {
+    const serviceItem = button.closest('.update-service-item');
+    const servicesList = document.getElementById('updateServicesList');
+    if (servicesList.children.length > 1) {
+        serviceItem.remove();
+    } else {
+        alert('Você precisa ter pelo menos um serviço!');
+    }
+}
+
+// Toggle horário de almoço
+function toggleUpdateLunchBreak() {
+    const checkbox = document.getElementById('updateHasLunchBreak');
+    const config = document.getElementById('updateLunchBreakConfig');
+    config.classList.toggle('hidden', !checkbox.checked);
+}
+
+// Configuração rápida de dias
+function setUpdateWorkingDays(days) {
+    document.querySelectorAll('.update-day-checkbox').forEach(cb => cb.checked = false);
+    days.forEach(day => {
+        document.getElementById(`update-day-${day}`).checked = true;
+    });
+}
+
+// Coletar serviços do formulário
+function collectUpdateServices() {
+    const services = [];
+    document.querySelectorAll('.update-service-item').forEach(item => {
+        const name = item.querySelector('.update-service-name').value.trim();
+        const duration = parseInt(item.querySelector('.update-service-duration').value);
+        const price = parseFloat(item.querySelector('.update-service-price').value) || 0;
+        
+        if (name) {
+            services.push({ name, duration, price });
+        }
+    });
+    return services;
+}
+
+// Coletar dias de funcionamento
+function collectUpdateWorkingDays() {
+    const days = [];
+    document.querySelectorAll('.update-day-checkbox:checked').forEach(checkbox => {
+        days.push(parseInt(checkbox.value));
+    });
+    return days;
+}
+
+// Atualizar dados do barbeiro
+async function updateBarberData(event) {
+    event.preventDefault();
+    
+    const services = collectUpdateServices();
+    const workingDays = collectUpdateWorkingDays();
+    
+    if (services.length === 0) {
+        alert('Configure pelo menos um serviço!');
+        return;
+    }
+    
+    if (workingDays.length === 0) {
+        alert('Selecione pelo menos um dia de funcionamento!');
+        return;
+    }
+    
+    const updatedData = {
+        businessName: document.getElementById('updateBusinessName').value.trim(),
+        whatsapp: document.getElementById('updateWhatsapp').value.trim(),
+        email: document.getElementById('updateEmail').value.trim(),
+        address: document.getElementById('updateAddress').value.trim(),
+        openTime: parseInt(document.getElementById('updateOpenTime').value),
+        closeTime: parseInt(document.getElementById('updateCloseTime').value),
+        bufferTime: parseInt(document.getElementById('updateBufferTime').value),
+        workingDays: workingDays,
+        services: services,
+        minAdvanceTime: parseInt(document.getElementById('updateMinAdvanceTime').value),
+        maxBookingsPerDay: parseInt(document.getElementById('updateMaxBookingsPerDay').value) || 0,
+        hasLunchBreak: document.getElementById('updateHasLunchBreak').checked,
+        lunchStart: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchStart').value : null,
+        lunchEnd: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchEnd').value : null,
+    };
+    
+    try {
+        // Aqui você faria a chamada para a API para atualizar os dados
+        // Por enquanto, vamos simular o sucesso
+        console.log('Dados para atualizar:', updatedData);
+        
+        // TODO: Implementar a chamada real para a API
+        // const response = await fetch(`/api/barbers/${barberSlug}`, {
+        //     method: 'PUT',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(updatedData)
+        // });
+        
+        alert('✅ Configurações atualizadas com sucesso!');
+        closeConfigModal();
+        
+        // Recarregar a página para atualizar os dados
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Erro ao atualizar:', error);
+        alert('❌ Erro ao atualizar configurações');
+    }
+}
+</script>
 
     <!-- ✅ MODAL ATUALIZADO: Detalhes do Agendamento -->
     <div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">

@@ -672,6 +672,32 @@ app.patch('/api/bookings/:bookingId/cancel', async (req, res) => {
     }
 });
 
+// Atualizar dados do barbeiro
+app.put('/api/barbers/:slug', async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const updateData = req.body;
+        
+        // Adicionar o slug aos dados
+        updateData.slug = slug;
+        updateData.updatedAt = new Date().toISOString();
+        
+        // Atualizar no Firebase
+        await db.collection('barbers').doc(slug).update(updateData);
+        
+        res.json({
+            success: true,
+            data: updateData
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Inicia servidor
 app.listen(PORT, () => {
     console.log('\n========================================');
