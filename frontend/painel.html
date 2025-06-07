@@ -57,7 +57,7 @@
                     <!-- ✅ NOVO BOTÃO: Adicionar Agendamento -->
                     <button 
                         onclick="openAddBookingModal()"
-                        class="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                     >
                         ➕ Novo Agendamento
                     </button>
@@ -202,114 +202,318 @@
     </div>
 
     <!-- ✅ NOVO MODAL: Adicionar Agendamento -->
-    <div id="addBookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">
-                        ➕ Novo Agendamento
-                    </h3>
-                    <button 
-                        onclick="closeAddBookingModal()"
-                        class="text-gray-500 hover:text-gray-700"
-                    >
-                        ✕
-                    </button>
-                </div>
+    <!-- Modal de Novo Agendamento para adicionar ao painel.html -->
+<div id="newBookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    ➕ Novo Agendamento Manual
+                </h3>
+                <button 
+                    onclick="closeNewBookingModal()"
+                    class="text-gray-500 hover:text-gray-700"
+                >
+                    ✕
+                </button>
+            </div>
 
-                <form id="addBookingForm" class="space-y-4">
-                    <!-- Nome do Cliente -->
+            <form id="newBookingForm" onsubmit="createManualBooking(event)">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Nome do Cliente *
+                            Nome do Cliente
                         </label>
                         <input 
                             type="text" 
-                            id="newCustomerName"
+                            id="manualCustomerName"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             placeholder="João Silva"
                             required
                         >
                     </div>
 
-                    <!-- WhatsApp do Cliente -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            WhatsApp *
+                            WhatsApp
                         </label>
                         <input 
                             type="tel" 
-                            id="newCustomerPhone"
+                            id="manualCustomerPhone"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                            placeholder="31999999999"
+                            placeholder="11999999999"
                             required
                         >
                     </div>
 
-                    <!-- Data -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Data *
+                            Data
                         </label>
                         <input 
                             type="date" 
-                            id="newBookingDate"
+                            id="manualDate"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            onchange="updateAvailableTimeSlots()"
                             required
                         >
                     </div>
 
-                    <!-- Horário -->
+                    <!-- SERVIÇO AGORA VEM ANTES DO HORÁRIO -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Horário *
+                            Serviço
                         </label>
                         <select 
-                            id="newBookingTime"
+                            id="manualService"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                            required
-                        >
-                            <option value="">Selecione um horário</option>
-                            <!-- Horários serão preenchidos via JS -->
-                        </select>
-                    </div>
-
-                    <!-- Serviço -->
-                    <div id="newServiceSelector">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Serviço *
-                        </label>
-                        <select 
-                            id="newBookingService"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            onchange="updateAvailableTimeSlots()"
                             required
                         >
                             <option value="">Selecione um serviço</option>
-                            <!-- Serviços serão preenchidos via JS -->
+                            <!-- Será preenchido dinamicamente -->
                         </select>
                     </div>
 
-                    <!-- Botões -->
-                    <div class="flex gap-3 pt-4">
-                        <button 
-                            type="button"
-                            onclick="closeAddBookingModal()"
-                            class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
+                    <!-- HORÁRIO AGORA VEM DEPOIS DO SERVIÇO -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Horário Disponível
+                        </label>
+                        <select 
+                            id="manualTime"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            required
                         >
-                            Cancelar
-                        </button>
-                        <button 
-                            type="submit"
-                            id="saveBookingBtn"
-                            class="flex-1 bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-600"
-                        >
-                            💾 Salvar Agendamento
-                        </button>
+                            <option value="">Selecione data e serviço primeiro</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+
+                    <button 
+                        type="submit"
+                        class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 font-medium"
+                    >
+                        ✅ Criar Agendamento
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+
+<!-- JavaScript para o Modal de Novo Agendamento -->
+<script>
+// Variável global para armazenar o serviço selecionado
+let selectedServiceIndex = null;
+
+// Abrir modal de novo agendamento
+function openNewBookingModal() {
+    document.getElementById('newBookingModal').classList.remove('hidden');
+    // Definir data mínima como hoje
+    document.getElementById('manualDate').min = new Date().toISOString().split('T')[0];
+    // Preencher serviços
+    populateServices();
+}
+
+// Fechar modal de novo agendamento
+function closeNewBookingModal() {
+    document.getElementById('newBookingModal').classList.add('hidden');
+    document.getElementById('newBookingForm').reset();
+    selectedServiceIndex = null;
+}
+
+// Preencher dropdown de serviços
+function populateServices() {
+    const serviceSelect = document.getElementById('manualService');
+    serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+    
+    if (barberData && barberData.services && barberData.services.length > 0) {
+        barberData.services.forEach((service, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${service.name} - ${service.duration}min - R$ ${service.price.toFixed(2)}`;
+            serviceSelect.appendChild(option);
+        });
+    } else {
+        // Serviço padrão se não houver serviços configurados
+        const option = document.createElement('option');
+        option.value = '0';
+        option.textContent = 'Serviço padrão - 30min';
+        serviceSelect.appendChild(option);
+    }
+}
+
+// Atualizar horários disponíveis baseado na data e serviço selecionados
+async function updateAvailableTimeSlots() {
+    const selectedDate = document.getElementById('manualDate').value;
+    const selectedServiceIdx = document.getElementById('manualService').value;
+    const timeSelect = document.getElementById('manualTime');
+    
+    // Limpar horários
+    timeSelect.innerHTML = '<option value="">Selecione data e serviço primeiro</option>';
+    
+    // Verificar se data e serviço foram selecionados
+    if (!selectedDate || selectedServiceIdx === '') {
+        return;
+    }
+    
+    // Armazenar índice do serviço selecionado
+    selectedServiceIndex = parseInt(selectedServiceIdx);
+    
+    // Verificar se é dia de funcionamento
+    const dayOfWeek = new Date(selectedDate + 'T12:00:00').getDay();
+    if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
+        timeSelect.innerHTML = '<option value="">Não funciona neste dia</option>';
+        return;
+    }
+    
+    try {
+        // Buscar agendamentos existentes para a data
+        const response = await fetch(`/api/bookings/${barberSlug}/${selectedDate}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const existingBookings = result.data.filter(b => b.status === 'confirmed');
+            const barberConfig = result.barberConfig || barberData;
+            
+            // Obter duração do serviço selecionado
+            const selectedService = barberData.services ? barberData.services[selectedServiceIndex] : { duration: 30 };
+            const serviceDuration = selectedService.duration;
+            const bufferTime = barberConfig.bufferTime || 10;
+            
+            // Gerar todos os horários possíveis
+            const availableSlots = [];
+            const openTime = barberConfig.openTime || barberData.openTime;
+            const closeTime = barberConfig.closeTime || barberData.closeTime;
+            
+            for (let hour = openTime; hour < closeTime; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) { // Intervalos de 15 minutos
+                    const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    
+                    // Verificar se o horário + duração não ultrapassa o fechamento
+                    const slotStart = hour * 60 + minute;
+                    const slotEnd = slotStart + serviceDuration + bufferTime;
+                    const closingMinutes = closeTime * 60;
+                    
+                    if (slotEnd > closingMinutes) continue;
+                    
+                    // Verificar horário de almoço
+                    if (barberConfig.hasLunchBreak) {
+                        const lunchStartMinutes = convertTimeToMinutes(barberConfig.lunchStart);
+                        const lunchEndMinutes = convertTimeToMinutes(barberConfig.lunchEnd);
+                        
+                        // Se o horário começa ou termina durante o almoço, pular
+                        if ((slotStart >= lunchStartMinutes && slotStart < lunchEndMinutes) ||
+                            (slotEnd > lunchStartMinutes && slotEnd <= lunchEndMinutes) ||
+                            (slotStart < lunchStartMinutes && slotEnd > lunchEndMinutes)) {
+                            continue;
+                        }
+                    }
+                    
+                    // Verificar se conflita com agendamentos existentes
+                    let isAvailable = true;
+                    for (const booking of existingBookings) {
+                        const bookingStart = convertTimeToMinutes(booking.time);
+                        const bookingDuration = booking.serviceDuration || 30;
+                        const bookingEnd = bookingStart + bookingDuration + bufferTime;
+                        
+                        // Verificar sobreposição
+                        if ((slotStart >= bookingStart && slotStart < bookingEnd) ||
+                            (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
+                            (slotStart < bookingStart && slotEnd > bookingEnd)) {
+                            isAvailable = false;
+                            break;
+                        }
+                    }
+                    
+                    if (isAvailable) {
+                        availableSlots.push(time);
+                    }
+                }
+            }
+            
+            // Preencher select com horários disponíveis
+            if (availableSlots.length > 0) {
+                timeSelect.innerHTML = '';
+                availableSlots.forEach(slot => {
+                    const option = document.createElement('option');
+                    option.value = slot;
+                    option.textContent = slot;
+                    timeSelect.appendChild(option);
+                });
+            } else {
+                timeSelect.innerHTML = '<option value="">Sem horários disponíveis</option>';
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao buscar horários:', error);
+        timeSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
+    }
+}
+
+// Função auxiliar para converter horário em minutos
+function convertTimeToMinutes(time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+// Criar agendamento manual
+async function createManualBooking(event) {
+    event.preventDefault();
+    
+    const customerName = document.getElementById('manualCustomerName').value.trim();
+    const customerPhone = document.getElementById('manualCustomerPhone').value.trim();
+    const date = document.getElementById('manualDate').value;
+    const time = document.getElementById('manualTime').value;
+    const serviceIndex = selectedServiceIndex;
+    
+    if (!time) {
+        alert('Por favor, selecione um horário disponível!');
+        return;
+    }
+    
+    const service = barberData.services ? barberData.services[serviceIndex] : {
+        name: 'Serviço',
+        duration: 30,
+        price: 0
+    };
+    
+    try {
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                barberSlug,
+                date,
+                time,
+                customerName,
+                customerPhone,
+                serviceId: serviceIndex,
+                serviceName: service.name,
+                serviceDuration: service.duration,
+                servicePrice: service.price
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ Agendamento criado com sucesso!');
+            closeNewBookingModal();
+            
+            // Recarregar a página para atualizar o calendário
+            window.location.reload();
+        } else {
+            alert('❌ Erro: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Erro ao criar agendamento:', error);
+        alert('❌ Erro ao criar agendamento');
+    }
+}
+</script>
 
  <!-- Este código deve ser adicionado ao painel.html -->
 
