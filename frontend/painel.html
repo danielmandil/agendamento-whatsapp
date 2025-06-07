@@ -1110,7 +1110,10 @@ async function updateBarberData(event) {
                 updateStatistics();
                 
                 document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
-                document.getElementById('blockDate').min = new Date().toISOString().split('T')[0];
+                const blockDateElement = document.getElementById('blockDate');
+                if (blockDateElement) {
+                    blockDateElement.min = new Date().toISOString().split('T')[0];
+                }
                 document.getElementById('newBookingDate').min = new Date().toISOString().split('T')[0];
             }
         });
