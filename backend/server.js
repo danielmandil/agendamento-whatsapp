@@ -49,6 +49,7 @@ app.post('/api/barbers', async (req, res) => {
         const {
             businessName,
             whatsapp,
+            email, 
             address = '',
             openTime,
             closeTime,
@@ -113,6 +114,7 @@ app.post('/api/barbers', async (req, res) => {
         const barberData = {
             businessName,
             whatsapp,
+            email, 
             address,
             openTime: parseInt(openTime) || 9,
             closeTime: parseInt(closeTime) || 18,
