@@ -35,7 +35,8 @@
         <!-- Seleção de Serviço -->
         <div id="serviceSelector" class="bg-white rounded-lg shadow-md p-4 mb-4 hidden">
             <h3 class="font-medium text-gray-700 mb-3">
-                ✂️ Escolha o serviço
+                ✂️ Escolha o serviço *
+                <span class="text-red-500 text-sm">(obrigatório)</span>
             </h3>
             <div class="space-y-2" id="serviceOptions">
                 <!-- Serviços serão gerados via JavaScript -->
@@ -217,21 +218,34 @@
                 const response = await fetch(`/api/barbers/${slug}`);
                 const result = await response.json();
 
-                if (result.success) {
-                    barberData = result.data;
-                    document.getElementById('businessTitle').textContent = barberData.businessName;
-                    document.title = `Agendar - ${barberData.businessName}`;
-                    
-                    if (barberData.services && barberData.services.length > 1) {
-                        generateServiceSelector();
-                        document.getElementById('serviceSelector').classList.remove('hidden');
-                    } else {
-                        selectedService = barberData.services ? barberData.services[0] : {
-                            name: 'Serviço',
-                            duration: barberData.serviceDuration || 30,
-                            price: 0
-                        };
+                 // ✅ CORREÇÃO: SEMPRE mostrar seletor se há múltiplos serviços
+            if (barberData.services && barberData.services.length > 1) {
+                generateServiceSelector();
+                document.getElementById('serviceSelector').classList.remove('hidden');
+                // ✅ NÃO selecionar automaticamente - forçar escolha do usuário
+                selectedService = null;
+            } 
+            // ✅ CORREÇÃO: Mesmo com 1 serviço, mostrar seletor para clareza
+            else if (barberData.services && barberData.services.length === 1) {
+                generateServiceSelector();
+                document.getElementById('serviceSelector').classList.remove('hidden');
+                // ✅ Pré-selecionar o único serviço disponível
+                selectedService = barberData.services[0];
+                // Marcar como selecionado visualmente
+                setTimeout(() => {
+                    const firstButton = document.querySelector('#serviceOptions button');
+                    if (firstButton) {
+                        firstButton.classList.add('bg-blue-100', 'border-blue-500');
                     }
+                }, 100);
+            } else {
+                // Fallback para compatibilidade com versão antiga
+                selectedService = {
+                    name: 'Serviço',
+                    duration: barberData.serviceDuration || 30,
+                    price: 0
+                };
+            }
                     
                     generateDays();
                     hideLoading();
@@ -249,24 +263,32 @@
             const serviceOptions = document.getElementById('serviceOptions');
             serviceOptions.innerHTML = '';
             
-            barberData.services.forEach((service, index) => {
-                const serviceElement = document.createElement('button');
-                serviceElement.className = 'w-full p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-left';
-                serviceElement.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-medium">${service.name}</p>
-                            <p class="text-sm text-gray-500">${service.duration} minutos</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-medium text-blue-600">R$ ${service.price.toFixed(2)}</p>
-                        </div>
-                    </div>
-                `;
-                serviceElement.onclick = () => selectService(service, serviceElement);
-                serviceOptions.appendChild(serviceElement);
-            });
-        }
+            // ✅ Adicionar um texto explicativo se múltiplos serviços
+    if (barberData.services.length > 1) {
+        const headerText = document.createElement('p');
+        headerText.className = 'text-sm text-gray-600 mb-3';
+        headerText.textContent = 'Selecione o serviço desejado:';
+        serviceOptions.appendChild(headerText);
+    }
+    
+    barberData.services.forEach((service, index) => {
+        const serviceElement = document.createElement('button');
+        serviceElement.className = 'w-full p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-left';
+        serviceElement.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="font-medium">${service.name}</p>
+                    <p class="text-sm text-gray-500">${service.duration} minutos</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-medium text-blue-600">R$ ${service.price.toFixed(2)}</p>
+                </div>
+            </div>
+        `;
+        serviceElement.onclick = () => selectService(service, serviceElement);
+        serviceOptions.appendChild(serviceElement);
+    });
+}
 
         function selectService(service, element) {
             selectedService = service;
@@ -489,12 +511,27 @@
             
             element.classList.add('bg-green-100', 'border-green-500');
             
+            // ✅ NOVA VALIDAÇÃO: Só mostrar confirmação se serviço estiver selecionado
+            if (selectedService) {
             showConfirmation();
-        }
+                } else {
+                    alert('Por favor, selecione um serviço antes de escolher o horário');
+                    highlightMissingService();
+                    // Remove seleção do horário
+                    element.classList.remove('bg-green-100', 'border-green-500');
+                    selectedTime = null;
+                }
+            }
 
         function showConfirmation() {
             if (!selectedDate || !selectedTime) return;
             
+            // ✅ NOVA VALIDAÇÃO: Verificar se serviço foi selecionado antes de mostrar confirmação
+            if (!selectedService) {
+                    alert('Por favor, selecione um serviço antes de prosseguir');
+                    return;
+                }
+
             const confirmSection = document.getElementById('confirmSection');
             const selectedDateTime = document.getElementById('selectedDateTime');
             const serviceSelected = document.getElementById('serviceSelected');
@@ -508,7 +545,8 @@
             
             selectedDateTime.textContent = `${dateString} às ${selectedTime}`;
             
-            if (selectedService && barberData.services && barberData.services.length > 1) {
+            // ✅ SEMPRE mostrar informações do serviço selecionado
+            if (selectedService) {
                 selectedServiceInfo.textContent = `${selectedService.name} - ${selectedService.duration}min - R$ ${selectedService.price.toFixed(2)}`;
                 serviceSelected.classList.remove('hidden');
             } else {
@@ -519,7 +557,16 @@
             
             confirmSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-
+        function highlightMissingService() {
+            const serviceSelector = document.getElementById('serviceSelector');
+            if (serviceSelector && !serviceSelector.classList.contains('hidden')) {
+                // Destacar em vermelho temporariamente
+                serviceSelector.classList.add('border-red-500', 'bg-red-50');
+                setTimeout(() => {
+                    serviceSelector.classList.remove('border-red-500', 'bg-red-50');
+                }, 3000);
+            }
+        }
         // ✅ FUNÇÃO PRINCIPAL CORRIGIDA
         async function confirmBooking() {
             const customerName = document.getElementById('customerName').value.trim();
@@ -530,8 +577,14 @@
                 return;
             }
             
+        // ✅ NOVA VALIDAÇÃO: Verificar se um serviço foi selecionado
+            if (!selectedService) {
+            alert('Por favor, selecione um serviço antes de confirmar o agendamento');
+            return;
+            }
+
             if (!selectedDate || !selectedTime || !barberData) return;
-            
+    
             const confirmButton = document.getElementById('confirmButton');
             confirmButton.disabled = true;
             confirmButton.textContent = 'Salvando...';
