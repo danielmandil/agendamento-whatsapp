@@ -131,7 +131,7 @@
             </button>
         </div>
 
-        <!-- ✅ MODAL DE SUCESSO MELHORADO -->
+        <!-- Modal de Sucesso -->
         <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div class="p-6 text-center">
@@ -145,7 +145,7 @@
                         Seu agendamento foi salvo com sucesso. Clique no botão abaixo para enviar a confirmação via WhatsApp.
                     </p>
                     
-                    <!-- ✅ BOTÕES DE AÇÃO MELHORADOS -->
+                    <!-- Botões de Ação -->
                     <div class="space-y-3">
                         <button 
                             onclick="openWhatsApp()"
@@ -158,7 +158,6 @@
                             Abrir WhatsApp
                         </button>
                         
-                        <!-- ✅ OPÇÃO ALTERNATIVA -->
                         <button 
                             onclick="copyMessage()"
                             class="w-full bg-blue-500 text-white font-medium py-2 rounded-lg hover:bg-blue-600"
@@ -174,7 +173,7 @@
                         </button>
                     </div>
 
-                    <!-- ✅ INFORMAÇÕES TÉCNICAS PARA DEBUG -->
+                    <!-- Informações de Debug -->
                     <div id="debugInfo" class="mt-4 p-3 bg-gray-50 rounded text-xs text-left hidden">
                         <p><strong>Debug Info:</strong></p>
                         <p id="userAgent"></p>
@@ -195,17 +194,18 @@
         let selectedTime = null;
         let selectedService = null;
         let existingBookings = [];
-        let savedBookingData = null; // ✅ Para armazenar dados do agendamento
-        let whatsappMessage = ''; // ✅ Para armazenar mensagem do WhatsApp
+        let savedBookingData = null;
+        let whatsappMessage = '';
 
         // Pega o slug da URL
         function getBarberSlug() {
             const path = window.location.pathname;
             const slug = path.substring(1);
+            console.log('🔍 Slug detectado:', slug);
             return slug || null;
         }
 
-        // Carrega dados do barbeiro
+        // Carrega dados do barbeiro - VERSÃO CORRIGIDA
         async function loadBarberData() {
             const slug = getBarberSlug();
             
@@ -215,106 +215,137 @@
             }
 
             try {
+                console.log('📡 Fazendo requisição para:', `/api/barbers/${slug}`);
                 const response = await fetch(`/api/barbers/${slug}`);
                 const result = await response.json();
+                
+                console.log('📦 Resultado da API:', result);
 
-                 // ✅ CORREÇÃO: SEMPRE mostrar seletor se há múltiplos serviços
-            if (barberData.services && barberData.services.length > 1) {
-                generateServiceSelector();
-                document.getElementById('serviceSelector').classList.remove('hidden');
-                // ✅ NÃO selecionar automaticamente - forçar escolha do usuário
-                selectedService = null;
-            } 
-            // ✅ CORREÇÃO: Mesmo com 1 serviço, mostrar seletor para clareza
-            else if (barberData.services && barberData.services.length === 1) {
-                generateServiceSelector();
-                document.getElementById('serviceSelector').classList.remove('hidden');
-                // ✅ Pré-selecionar o único serviço disponível
-                selectedService = barberData.services[0];
-                // Marcar como selecionado visualmente
-                setTimeout(() => {
-                    const firstButton = document.querySelector('#serviceOptions button');
-                    if (firstButton) {
-                        firstButton.classList.add('bg-blue-100', 'border-blue-500');
-                    }
-                }, 100);
-            } else {
-                // Fallback para compatibilidade com versão antiga
-                selectedService = {
-                    name: 'Serviço',
-                    duration: barberData.serviceDuration || 30,
-                    price: 0
-                };
-            }
+                if (result.success) {
+                    // ✅ PRIMEIRO: definir barberData
+                    barberData = result.data;
+                    console.log('💾 Dados do barbeiro carregados:', barberData);
                     
+                    document.getElementById('businessTitle').textContent = barberData.businessName;
+                    document.title = `Agendar - ${barberData.businessName}`;
+                    
+                    // ✅ SEGUNDO: configurar serviços
+                    if (barberData.services && barberData.services.length > 1) {
+                        console.log('🔄 Múltiplos serviços encontrados, mostrando seletor');
+                        generateServiceSelector();
+                        document.getElementById('serviceSelector').classList.remove('hidden');
+                        selectedService = null; // Forçar escolha do usuário
+                    } 
+                    else if (barberData.services && barberData.services.length === 1) {
+                        console.log('🔄 Único serviço encontrado, pré-selecionando');
+                        generateServiceSelector();
+                        document.getElementById('serviceSelector').classList.remove('hidden');
+                        selectedService = barberData.services[0];
+                        
+                        // Marcar como selecionado visualmente
+                        setTimeout(() => {
+                            const firstButton = document.querySelector('#serviceOptions button');
+                            if (firstButton) {
+                                firstButton.classList.add('bg-blue-100', 'border-blue-500');
+                            }
+                        }, 100);
+                    } else {
+                        console.log('🔄 Usando fallback para compatibilidade');
+                        selectedService = {
+                            name: 'Serviço',
+                            duration: barberData.serviceDuration || 30,
+                            price: 0
+                        };
+                    }
+                    
+                    // ✅ TERCEIRO: gerar dias e esconder loading
                     generateDays();
                     hideLoading();
                 } else {
+                    console.error('❌ API retornou erro:', result.error);
                     showError();
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados:', error);
+                console.error('💥 Erro ao carregar dados:', error);
                 showError();
             }
         }
 
-        // Gera seletor de serviços
+        // Gera seletor de serviços - VERSÃO CORRIGIDA
         function generateServiceSelector() {
             const serviceOptions = document.getElementById('serviceOptions');
             serviceOptions.innerHTML = '';
             
-            // ✅ Adicionar um texto explicativo se múltiplos serviços
-    if (barberData.services.length > 1) {
-        const headerText = document.createElement('p');
-        headerText.className = 'text-sm text-gray-600 mb-3';
-        headerText.textContent = 'Selecione o serviço desejado:';
-        serviceOptions.appendChild(headerText);
-    }
-    
-    barberData.services.forEach((service, index) => {
-        const serviceElement = document.createElement('button');
-        serviceElement.className = 'w-full p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-left';
-        serviceElement.innerHTML = `
-            <div class="flex justify-between items-center">
-                <div>
-                    <p class="font-medium">${service.name}</p>
-                    <p class="text-sm text-gray-500">${service.duration} minutos</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-medium text-blue-600">R$ ${service.price.toFixed(2)}</p>
-                </div>
-            </div>
-        `;
-        serviceElement.onclick = () => selectService(service, serviceElement);
-        serviceOptions.appendChild(serviceElement);
-    });
-}
+            // Verificar se barberData existe e tem serviços
+            if (!barberData || !barberData.services || barberData.services.length === 0) {
+                console.error('❌ Dados de serviços não encontrados');
+                return;
+            }
+            
+            console.log('🎯 Gerando seletor com serviços:', barberData.services);
+            
+            // Adicionar texto explicativo se múltiplos serviços
+            if (barberData.services.length > 1) {
+                const headerText = document.createElement('p');
+                headerText.className = 'text-sm text-gray-600 mb-3';
+                headerText.textContent = 'Selecione o serviço desejado:';
+                serviceOptions.appendChild(headerText);
+            }
+            
+            barberData.services.forEach((service, index) => {
+                const serviceElement = document.createElement('button');
+                serviceElement.className = 'w-full p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-left';
+                serviceElement.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">${service.name}</p>
+                            <p class="text-sm text-gray-500">${service.duration} minutos</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-blue-600">R$ ${service.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                serviceElement.onclick = () => selectService(service, serviceElement);
+                serviceOptions.appendChild(serviceElement);
+            });
+        }
 
+        // Seleciona um serviço
         function selectService(service, element) {
             selectedService = service;
+            console.log('🎯 Serviço selecionado:', service);
             
+            // Remove seleção anterior
             document.querySelectorAll('#serviceOptions button').forEach(btn => {
                 btn.classList.remove('bg-blue-100', 'border-blue-500');
             });
             
+            // Adiciona seleção atual
             element.classList.add('bg-blue-100', 'border-blue-500');
             
+            // Recarrega horários com nova duração
             if (selectedDate) {
                 loadAvailableSlots();
             }
         }
 
+        // Mostra erro
         function showError() {
+            console.log('🚨 Mostrando erro - barbeiro não encontrado');
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
             document.getElementById('errorMessage').classList.remove('hidden');
         }
 
+        // Esconde loading
         function hideLoading() {
+            console.log('✅ Escondendo loading - dados carregados');
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
         }
 
+        // Gera os próximos dias
         function generateDays() {
             const daySelector = document.getElementById('daySelector');
             daySelector.innerHTML = '';
@@ -334,9 +365,9 @@
                 date.setDate(today.getDate() + daysChecked);
                 
                 const dayOfWeek = date.getDay();
-                
                 daysChecked++;
                 
+                // Verificar se é um dia de funcionamento
                 if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
                     continue;
                 }
@@ -344,6 +375,7 @@
                 const dayElement = document.createElement('button');
                 dayElement.className = 'p-3 border rounded-lg hover:bg-blue-50 focus:bg-blue-100 focus:border-blue-500 transition text-center min-w-[80px]';
                 
+                // Destacar hoje e amanhã
                 let dayLabel = days[date.getDay()];
                 if (daysChecked === 1) dayLabel = 'Hoje';
                 else if (daysChecked === 2) dayLabel = 'Amanhã';
@@ -364,30 +396,38 @@
                 availableDaysCount++;
             }
         
+            // Selecionar o primeiro dia disponível
             if (firstAvailableButton) {
                 firstAvailableButton.click();
             }
         }
 
+        // Seleciona uma data
         async function selectDate(date, element) {
             selectedDate = date;
             selectedTime = null;
             
+            // Remove seleção anterior
             document.querySelectorAll('#daySelector button').forEach(btn => {
                 btn.classList.remove('bg-blue-100', 'border-blue-500');
             });
             
+            // Adiciona seleção atual
             element.classList.add('bg-blue-100', 'border-blue-500');
             
+            // Esconde seção de confirmação
             document.getElementById('confirmSection').classList.add('hidden');
             
+            // Carrega horários disponíveis
             await loadAvailableSlots();
         }
 
+        // Carrega horários disponíveis
         async function loadAvailableSlots() {
             const dateStr = selectedDate.toISOString().split('T')[0];
             
             try {
+                // Buscar agendamentos existentes
                 const bookingsResponse = await fetch(`/api/bookings/${barberData.slug}/${dateStr}`);
                 const bookingsResult = await bookingsResponse.json();
                 
@@ -405,6 +445,7 @@
             }
         }
 
+        // Função auxiliar para mostrar mensagem de sem horários
         function showNoSlotsMessage(message = 'Nenhum horário disponível para este dia.') {
             const timeSlotsContainer = document.getElementById('timeSlots');
             const noSlotsMessage = document.getElementById('noSlotsMessage');
@@ -414,6 +455,7 @@
             noSlotsMessage.textContent = message;
         }
 
+        // Gera os horários disponíveis
         function generateTimeSlots() {
             const timeSlotsContainer = document.getElementById('timeSlots');
             const noSlotsMessage = document.getElementById('noSlotsMessage');
@@ -422,6 +464,7 @@
             const slots = [];
             const now = new Date();
             
+            // Usar configuração do barbeiro ou padrão
             const config = barberConfig || {
                 openTime: barberData.openTime,
                 closeTime: barberData.closeTime,
@@ -433,17 +476,21 @@
                 minAdvanceTime: barberData.minAdvanceTime || 2
             };
             
+            // Duração do serviço selecionado
             const serviceDuration = selectedService ? selectedService.duration : (config.services[0]?.duration || 30);
             const bufferTime = config.bufferTime || 0;
             
+            // Gerar slots
             for (let hour = config.openTime; hour < config.closeTime; hour++) {
                 for (let minute = 0; minute < 60; minute += serviceDuration + bufferTime) {
                     const slotDate = new Date(selectedDate);
                     slotDate.setHours(hour, minute, 0, 0);
                     
+                    // Verificar antecedência mínima
                     const hoursUntilSlot = (slotDate - now) / (1000 * 60 * 60);
                     if (hoursUntilSlot < config.minAdvanceTime) continue;
                     
+                    // Verificar horário de almoço
                     if (config.hasLunchBreak && config.lunchStart && config.lunchEnd) {
                         const slotTime = hour + (minute / 60);
                         const lunchStartDecimal = convertTimeToDecimal(config.lunchStart);
@@ -454,6 +501,7 @@
                         }
                     }
                     
+                    // Verificar se o slot completo cabe no horário de funcionamento
                     const endMinutes = minute + serviceDuration;
                     const endHour = hour + Math.floor(endMinutes / 60);
                     const adjustedEndMinute = endMinutes % 60;
@@ -464,6 +512,7 @@
                     
                     const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                     
+                    // Verificar se já está ocupado
                     const isBooked = existingBookings.some(booking => booking.time === timeString);
                     
                     slots.push({
@@ -496,42 +545,46 @@
             }
         }
 
+        // Função auxiliar para converter tempo em decimal
         function convertTimeToDecimal(timeString) {
             if (!timeString) return 0;
             const [hours, minutes] = timeString.split(':').map(Number);
             return hours + (minutes / 60);
         }
 
+        // Seleciona um horário - VERSÃO CORRIGIDA
         function selectTime(time, element) {
+            // ✅ VALIDAÇÃO: Verificar se serviço foi selecionado ANTES de permitir seleção de horário
+            if (!selectedService) {
+                alert('Por favor, selecione um serviço antes de escolher o horário');
+                highlightMissingService();
+                return;
+            }
+
             selectedTime = time;
             
+            // Remove seleção anterior
             document.querySelectorAll('#timeSlots button').forEach(btn => {
                 btn.classList.remove('bg-green-100', 'border-green-500');
             });
             
+            // Adiciona seleção atual
             element.classList.add('bg-green-100', 'border-green-500');
             
-            // ✅ NOVA VALIDAÇÃO: Só mostrar confirmação se serviço estiver selecionado
-            if (selectedService) {
+            // Mostra seção de confirmação
             showConfirmation();
-                } else {
-                    alert('Por favor, selecione um serviço antes de escolher o horário');
-                    highlightMissingService();
-                    // Remove seleção do horário
-                    element.classList.remove('bg-green-100', 'border-green-500');
-                    selectedTime = null;
-                }
-            }
+        }
 
+        // Mostra resumo para confirmação - VERSÃO CORRIGIDA
         function showConfirmation() {
             if (!selectedDate || !selectedTime) return;
             
-            // ✅ NOVA VALIDAÇÃO: Verificar se serviço foi selecionado antes de mostrar confirmação
+            // ✅ VALIDAÇÃO: Verificar se serviço foi selecionado
             if (!selectedService) {
-                    alert('Por favor, selecione um serviço antes de prosseguir');
-                    return;
-                }
-
+                alert('Por favor, selecione um serviço antes de prosseguir');
+                return;
+            }
+            
             const confirmSection = document.getElementById('confirmSection');
             const selectedDateTime = document.getElementById('selectedDateTime');
             const serviceSelected = document.getElementById('serviceSelected');
@@ -555,8 +608,11 @@
             
             confirmSection.classList.remove('hidden');
             
+            // Scroll suave até a seção
             confirmSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+
+        // Função para destacar seletor de serviço quando obrigatório
         function highlightMissingService() {
             const serviceSelector = document.getElementById('serviceSelector');
             if (serviceSelector && !serviceSelector.classList.contains('hidden')) {
@@ -567,7 +623,8 @@
                 }, 3000);
             }
         }
-        // ✅ FUNÇÃO PRINCIPAL CORRIGIDA
+
+        // Confirma o agendamento - VERSÃO CORRIGIDA
         async function confirmBooking() {
             const customerName = document.getElementById('customerName').value.trim();
             const customerPhone = document.getElementById('customerPhone').value.trim();
@@ -577,21 +634,24 @@
                 return;
             }
             
-        // ✅ NOVA VALIDAÇÃO: Verificar se um serviço foi selecionado
+            // ✅ VALIDAÇÃO: Verificar se serviço foi selecionado
             if (!selectedService) {
-            alert('Por favor, selecione um serviço antes de confirmar o agendamento');
-            return;
+                alert('Por favor, selecione um serviço antes de confirmar o agendamento');
+                highlightMissingService();
+                return;
             }
-
+            
             if (!selectedDate || !selectedTime || !barberData) return;
-    
+            
             const confirmButton = document.getElementById('confirmButton');
             confirmButton.disabled = true;
             confirmButton.textContent = 'Salvando...';
             
             try {
+                // Formatar a data
                 const dateStr = selectedDate.toISOString().split('T')[0];
                 
+                // Dados do agendamento
                 const bookingData = {
                     barberSlug: barberData.slug,
                     date: dateStr,
@@ -600,6 +660,7 @@
                     customerPhone
                 };
                 
+                // Adicionar dados do serviço
                 if (selectedService) {
                     bookingData.serviceId = 0;
                     bookingData.serviceName = selectedService.name;
@@ -607,6 +668,7 @@
                     bookingData.servicePrice = selectedService.price;
                 }
                 
+                // Salvar no banco
                 const response = await fetch('/api/bookings', {
                     method: 'POST',
                     headers: {
@@ -618,13 +680,13 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // ✅ SALVAR DADOS PARA USO POSTERIOR
+                    // Salvar dados para uso posterior
                     savedBookingData = result.data;
                     
-                    // ✅ PREPARAR MENSAGEM DO WHATSAPP
+                    // Preparar mensagem do WhatsApp
                     prepareWhatsAppMessage();
                     
-                    // ✅ MOSTRAR MODAL DE SUCESSO EM VEZ DE ABRIR WHATSAPP IMEDIATAMENTE
+                    // Mostrar modal de sucesso
                     showSuccessModal();
                     
                     // Resetar o formulário
@@ -651,7 +713,7 @@
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Preparar mensagem do WhatsApp
+        // Preparar mensagem do WhatsApp
         function prepareWhatsAppMessage() {
             const dateString = selectedDate.toLocaleDateString('pt-BR');
             const serviceInfo = selectedService ? 
@@ -671,62 +733,52 @@ ${addressInfo}
 *Agendamento salvo automaticamente no sistema!*`;
         }
 
-        // ✅ NOVA FUNÇÃO: Mostrar modal de sucesso
+        // Mostrar modal de sucesso
         function showSuccessModal() {
             document.getElementById('successModal').classList.remove('hidden');
-            
-            // ✅ INFORMAÇÕES DE DEBUG
             document.getElementById('userAgent').textContent = `User Agent: ${navigator.userAgent}`;
         }
 
-        // ✅ NOVA FUNÇÃO: Fechar modal de sucesso
+        // Fechar modal de sucesso
         function closeSuccessModal() {
             document.getElementById('successModal').classList.add('hidden');
         }
 
-        // ✅ FUNÇÃO CORRIGIDA: Abrir WhatsApp com múltiplas tentativas
+        // Abrir WhatsApp
         function openWhatsApp() {
             console.log('🔄 Tentando abrir WhatsApp...');
             
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            const isAndroid = /Android/.test(navigator.userAgent);
             
-            // ✅ LIMPAR NÚMERO DE TELEFONE (remover caracteres especiais)
+            // Limpar número de telefone
             const cleanPhone = barberData.whatsapp.replace(/\D/g, '');
-            
-            // ✅ GARANTIR CÓDIGO DO PAÍS
             const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
             
-            // ✅ ENCODE DA MENSAGEM
+            // Encode da mensagem
             const encodedMessage = encodeURIComponent(whatsappMessage);
             
-            // ✅ MÚLTIPLAS URLs PARA TENTAR
+            // URLs para tentar
             const urls = [];
             
             if (isMobile) {
-                // Para mobile: tentar app primeiro, depois web
                 urls.push(`whatsapp://send?phone=${phoneWithCountry}&text=${encodedMessage}`);
                 urls.push(`https://wa.me/${phoneWithCountry}?text=${encodedMessage}`);
-                urls.push(`https://api.whatsapp.com/send?phone=${phoneWithCountry}&text=${encodedMessage}`);
             } else {
-                // Para desktop: usar WhatsApp Web
                 urls.push(`https://wa.me/${phoneWithCountry}?text=${encodedMessage}`);
                 urls.push(`https://web.whatsapp.com/send?phone=${phoneWithCountry}&text=${encodedMessage}`);
             }
             
-            // ✅ SALVAR URL PARA DEBUG
-            document.getElementById('whatsappUrl').textContent = `URLs tentadas: ${urls.join(' | ')}`;
+            // Salvar URL para debug
+            document.getElementById('whatsappUrl').textContent = `URLs: ${urls.join(' | ')}`;
             
-            // ✅ TENTAR PRIMEIRA URL
+            // Tentar primeira URL
             tryWhatsAppUrl(urls, 0);
         }
 
-        // ✅ NOVA FUNÇÃO: Tentar abrir URLs do WhatsApp sequencialmente
+        // Tentar abrir URLs do WhatsApp
         function tryWhatsAppUrl(urls, index) {
             if (index >= urls.length) {
-                console.log('❌ Todas as tentativas falharam');
-                alert('Não foi possível abrir o WhatsApp automaticamente. Use o botão "Copiar Mensagem" para enviar manualmente.');
+                alert('Não foi possível abrir o WhatsApp automaticamente. Use o botão "Copiar Mensagem".');
                 return;
             }
             
@@ -734,21 +786,14 @@ ${addressInfo}
             console.log(`🔄 Tentativa ${index + 1}: ${url}`);
             
             try {
-                // ✅ PARA MOBILE: usar window.location em vez de window.open
                 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                     if (url.startsWith('whatsapp://')) {
-                        // Tentar app nativo
                         window.location.href = url;
-                        
-                        // Se app não abrir, tentar web após 2 segundos
                         setTimeout(() => {
                             tryWhatsAppUrl(urls, index + 1);
                         }, 2000);
                     } else {
-                        // Para URLs web, usar window.open
                         const whatsappWindow = window.open(url, '_blank');
-                        
-                        // Verificar se abriu
                         setTimeout(() => {
                             if (!whatsappWindow || whatsappWindow.closed) {
                                 tryWhatsAppUrl(urls, index + 1);
@@ -756,9 +801,7 @@ ${addressInfo}
                         }, 1000);
                     }
                 } else {
-                    // Para desktop
                     const whatsappWindow = window.open(url, '_blank');
-                    
                     if (!whatsappWindow) {
                         tryWhatsAppUrl(urls, index + 1);
                     }
@@ -769,14 +812,12 @@ ${addressInfo}
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Copiar mensagem para clipboard
+        // Copiar mensagem para clipboard
         async function copyMessage() {
             try {
                 await navigator.clipboard.writeText(whatsappMessage);
                 alert('📋 Mensagem copiada! Cole no WhatsApp manualmente.');
             } catch (error) {
-                console.error('Erro ao copiar:', error);
-                
                 // Fallback para browsers mais antigos
                 const textArea = document.createElement('textarea');
                 textArea.value = whatsappMessage;
@@ -784,17 +825,17 @@ ${addressInfo}
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                
                 alert('📋 Mensagem copiada! Cole no WhatsApp manualmente.');
             }
         }
 
-        // ✅ NOVA FUNÇÃO: Toggle debug info
+        // Toggle debug info
         function toggleDebug() {
             const debugInfo = document.getElementById('debugInfo');
             debugInfo.classList.toggle('hidden');
         }
 
+        // Reseta o formulário
         function resetForm() {
             document.getElementById('customerName').value = '';
             document.getElementById('customerPhone').value = '';
@@ -806,10 +847,26 @@ ${addressInfo}
             });
         }
 
-        // Inicializa a página
-        window.addEventListener('DOMContentLoaded', () => {
-            loadBarberData();
+        // Inicialização com tratamento de erro e timeout de segurança
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Página carregada, iniciando...');
+            
+            try {
+                await loadBarberData();
+            } catch (error) {
+                console.error('💥 Erro fatal ao carregar:', error);
+                showError();
+            }
         });
+
+        // Timeout de segurança (caso algo trave)
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading && !loading.classList.contains('hidden')) {
+                console.warn('⚠️ Timeout: forçando saída do loading');
+                showError();
+            }
+        }, 10000); // 10 segundos
     </script>
 </body>
 </html>
