@@ -788,33 +788,53 @@
         let blockedDates = [];
         let selectedServiceIndex = null;
 
-        // ✅ AUTENTICAÇÃO ULTRA-SIMPLES (use se a anterior não funcionar)
+        // ✅ FUNÇÃO DE AUTENTICAÇÃO ULTRA-SIMPLIFICADA
         async function checkAuth() {
             console.log('🔐 Verificando autenticação...');
             
+            // Recuperar dados do localStorage
             userEmail = localStorage.getItem('userEmail');
             const loginTime = localStorage.getItem('loginTime');
             
+            console.log('📋 Dados encontrados:', { userEmail, loginTime });
+            
+            // Se não tem dados, redirecionar para login
             if (!userEmail || !loginTime) {
+                console.log('❌ Dados de autenticação não encontrados');
                 redirectToLogin();
                 return false;
             }
             
-            // Verificar expiração (24h)
-            const hoursElapsed = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
+            // Verificar se a sessão expirou (24 horas)
+            const now = new Date().getTime();
+            const loginTimeMs = parseInt(loginTime);
+            const hoursElapsed = (now - loginTimeMs) / (1000 * 60 * 60);
+            
+            console.log('⏰ Horas desde login:', hoursElapsed.toFixed(2));
+            
             if (hoursElapsed > 24) {
+                console.log('❌ Sessão expirada');
                 logout();
                 return false;
             }
             
-            // ✅ DERIVAR SLUG DO EMAIL (método simples)
-            barberSlug = userEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+            // ✅ DERIVAR SLUG DO EMAIL (método que funciona sempre)
+            // Pega a parte antes do @ e limpa caracteres especiais
+            const emailPrefix = userEmail.split('@')[0];
+            barberSlug = emailPrefix.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // remove acentos
+                .replace(/[^a-z0-9]/g, '-')      // substitui caracteres especiais por -
+                .replace(/-+/g, '-')             // remove -- duplicados
+                .replace(/^-|-$/g, '');          // remove - do início e fim
             
-            console.log('✅ Usando slug:', barberSlug);
+            console.log('✅ Slug derivado:', barberSlug);
+            console.log('✅ Autenticação válida para:', userEmail);
+            
             return true;
         }
 
-        // ✅ NOVO: Função de logout
+        // ✅ FUNÇÃO DE LOGOUT
         function logout() {
             console.log('🚪 Fazendo logout...');
             
@@ -827,30 +847,42 @@
             redirectToLogin();
         }
 
-        // ✅ NOVO: Redirecionamento para login
+        // ✅ REDIRECIONAMENTO PARA LOGIN
         function redirectToLogin() {
             console.log('🔄 Redirecionando para login...');
             window.location.href = '/login.html';
         }
 
-        // ✅ NOVO: Esconder overlay de autenticação
+        // ✅ ESCONDER OVERLAY DE AUTENTICAÇÃO
         function hideAuthOverlay() {
-            document.getElementById('authOverlay').style.display = 'none';
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
         }
 
-        // Inicialização atualizada
+        // ✅ FUNÇÃO PARA PEGAR SLUG DA URL (REMOVER ESTA FUNÇÃO)
+        // function getBarberSlug() {
+        //     // Esta função não é mais necessária - o slug vem da autenticação
+        //     return barberSlug;
+        // }
+
+        // ✅ INICIALIZAÇÃO ATUALIZADA
         window.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Iniciando aplicação...');
             
-            // ✅ NOVO: Verificar autenticação primeiro
+            // ✅ VERIFICAR AUTENTICAÇÃO PRIMEIRO
             const isAuthenticated = await checkAuth();
             
             if (!isAuthenticated) {
+                console.log('❌ Não autenticado - parando execução');
                 return; // Parar execução se não autenticado
             }
             
-            // ✅ NOVO: Esconder overlay de autenticação
+            // ✅ ESCONDER OVERLAY DE AUTENTICAÇÃO
             hideAuthOverlay();
+            
+            console.log('✅ Usuário autenticado, continuando...');
             
             // Continuar com a inicialização normal
             if (barberSlug) {
@@ -861,55 +893,92 @@
                 updateStatistics();
                 
                 // Configurar datas mínimas
-                document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('dateFilter').value = today;
+                
                 const blockDateElement = document.getElementById('blockDate');
                 if (blockDateElement) {
-                    blockDateElement.min = new Date().toISOString().split('T')[0];
+                    blockDateElement.min = today;
                 }
-                document.getElementById('manualDate').min = new Date().toISOString().split('T')[0];
+                
+                const manualDateElement = document.getElementById('manualDate');
+                if (manualDateElement) {
+                    manualDateElement.min = today;
+                }
             }
         });
 
-        function getBarberSlug() {
-            // ✅ REMOVIDO: Prompt para slug (agora vem da autenticação)
-            return barberSlug;
-        }
-
-        async function loadBarberData() {
-            try {
-                const response = await fetch(`/api/barbers/${barberSlug}`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    barberData = result.data;
-                    document.getElementById('barberName').textContent = barberData.businessName;
-                    document.title = `Painel - ${barberData.businessName}`;
+       // ✅ FUNÇÃO loadBarberData COMPLETA COM CORREÇÃO DO SLUG
+            async function loadBarberData() {
+                try {
+                    console.log('📥 Carregando dados do barbeiro:', barberSlug);
                     
-                    const bookingUrl = window.location.origin + '/' + barberSlug;
-                    document.getElementById('bookingLink').textContent = bookingUrl;
-
-                    // Preencher modal com dados atuais
-                    document.getElementById('newOpenTime').value = barberData.openTime;
-                    document.getElementById('newCloseTime').value = barberData.closeTime;
+                    // ✅ PRIMEIRA TENTATIVA - com slug derivado do email
+                    let response = await fetch(`/api/barbers/${barberSlug}`);
+                    let result = await response.json();
                     
-                    if (barberData.workingDays) {
-                        barberData.workingDays.forEach(day => {
-                            const checkbox = document.getElementById(`modal-day-${day}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
+                    // ✅ SE NÃO ENCONTROU, TENTAR VARIAÇÕES DO SLUG
+                    if (!result.success || !result.data) {
+                        console.log('⚠️ Slug inicial não funcionou, tentando variações...');
+                        
+                        const emailPrefix = userEmail.split('@')[0];
+                        const variations = [
+                            barberSlug,                           // slug original
+                            barberSlug + '-barber',               // adicionar -barber
+                            barberSlug + '-barbearia',            // adicionar -barbearia
+                            emailPrefix + '-barbershop',          // outras variações
+                            emailPrefix + '-salon',
+                            emailPrefix + '-1',
+                            emailPrefix + '-2'
+                        ];
+                        
+                        // Tentar cada variação
+                        for (const variation of variations) {
+                            console.log(`🔍 Tentando slug: ${variation}`);
+                            
+                            try {
+                                response = await fetch(`/api/barbers/${variation}`);
+                                result = await response.json();
+                                
+                                if (result.success && result.data) {
+                                    console.log(`✅ Slug encontrado: ${variation}`);
+                                    barberSlug = variation; // ✅ ATUALIZAR O SLUG CORRETO
+                                    break;
+                                }
+                            } catch (e) {
+                                console.log(`❌ Erro ao tentar ${variation}:`, e.message);
+                                continue;
+                            }
+                        }
                     }
-                } else {
-                    alert('Barbeiro não encontrado!');
+                    
+                    // ✅ VERIFICAR SE CONSEGUIU CARREGAR OS DADOS
+                    if (result.success && result.data) {
+                        barberData = result.data;
+                        document.getElementById('barberName').textContent = barberData.businessName;
+                        document.title = `Painel - ${barberData.businessName}`;
+                        
+                        const bookingUrl = window.location.origin + '/' + barberSlug;
+                        document.getElementById('bookingLink').textContent = bookingUrl;
+
+                        console.log('✅ Dados do barbeiro carregados com sucesso');
+                        console.log('📊 Barbearia:', barberData.businessName);
+                        console.log('🔗 Slug final:', barberSlug);
+                        
+                    } else {
+                        console.error('❌ Nenhum slug funcionou. Dados disponíveis:', result);
+                        
+                        // ✅ MOSTRAR INFORMAÇÕES PARA DEBUG
+                        alert(`❌ Barbearia não encontrada!\n\nEmail: ${userEmail}\nSlug tentado: ${barberSlug}\n\nVerifique se você criou a barbearia com este email.`);
+                        logout();
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao carregar dados:', error);
+                    alert('Erro de conexão ao carregar dados da barbearia!');
                     logout();
                 }
-            } catch (error) {
-                console.error('Erro ao carregar dados:', error);
             }
-        }
 
         async function loadBookings() {
             console.log('📥 Iniciando loadBookings...');
