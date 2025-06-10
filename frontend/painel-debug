@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Sistema de Agendamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">🐛 Debug do Sistema</h1>
+        
+        <!-- Status do LocalStorage -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">📦 LocalStorage Status</h2>
+            <div id="storageInfo" class="space-y-2 font-mono text-sm">
+                Carregando...
+            </div>
+        </div>
+        
+        <!-- Ações -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">🔧 Ações de Debug</h2>
+            <div class="space-y-3">
+                <button onclick="clearStorage()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    🗑️ Limpar LocalStorage
+                </button>
+                <button onclick="testAuth()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    🔐 Testar Autenticação
+                </button>
+                <button onclick="goToLogin()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    🔑 Ir para Login
+                </button>
+                <button onclick="goToPanel()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                    📊 Tentar Abrir Painel
+                </button>
+            </div>
+        </div>
+        
+        <!-- Console -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">📝 Console de Debug</h2>
+            <div id="console" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-xs h-64 overflow-y-auto">
+                > Sistema iniciado...<br>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const log = (message, type = 'info') => {
+            const consoleEl = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-gray-400';
+            consoleEl.innerHTML += `<span class="${color}">[${timestamp}] ${message}</span><br>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+        
+        const updateStorageInfo = () => {
+            const storageEl = document.getElementById('storageInfo');
+            const authData = localStorage.getItem('authData');
+            
+            let html = '<div class="space-y-2">';
+            
+            if (authData) {
+                try {
+                    const data = JSON.parse(authData);
+                    html += '<p class="text-green-600">✅ authData encontrado:</p>';
+                    html += '<pre class="bg-gray-100 p-2 rounded overflow-x-auto">' + JSON.stringify(data, null, 2) + '</pre>';
+                    
+                    // Verificar validade
+                    const now = Date.now();
+                    const hoursElapsed = (now - data.loginTime) / (1000 * 60 * 60);
+                    html += `<p>⏰ Tempo desde login: ${hoursElapsed.toFixed(2)} horas</p>`;
+                    html += `<p class="${hoursElapsed < 24 ? 'text-green-600' : 'text-red-600'}">
+                        ${hoursElapsed < 24 ? '✅ Sessão válida' : '❌ Sessão expirada'}
+                    </p>`;
+                } catch (e) {
+                    html += '<p class="text-red-600">❌ authData corrompido</p>';
+                    log('Erro ao parsear authData: ' + e.message, 'error');
+                }
+            } else {
+                html += '<p class="text-red-600">❌ Nenhum authData encontrado</p>';
+            }
+            
+            // Mostrar todos os itens do localStorage
+            html += '<hr class="my-4">';
+            html += '<p class="font-semibold">Todos os itens no localStorage:</p>';
+            html += '<ul class="list-disc list-inside">';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                html += `<li>${key}: ${localStorage.getItem(key).substring(0, 50)}...</li>`;
+            }
+            html += '</ul>';
+            
+            html += '</div>';
+            storageEl.innerHTML = html;
+        };
+        
+        const clearStorage = () => {
+            localStorage.clear();
+            log('LocalStorage limpo!', 'success');
+            updateStorageInfo();
+        };
+        
+        const testAuth = () => {
+            log('Testando autenticação...');
+            const authData = localStorage.getItem('authData');
+            
+            if (!authData) {
+                log('Nenhum dado de autenticação encontrado', 'error');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(authData);
+                log('authData parseado com sucesso', 'success');
+                log('Email: ' + data.email);
+                log('Slug: ' + data.slug);
+                log('BusinessName: ' + data.businessName);
+                
+                const now = Date.now();
+                const hoursElapsed = (now - data.loginTime) / (1000 * 60 * 60);
+                
+                if (hoursElapsed > 24) {
+                    log('Sessão expirada (' + hoursElapsed.toFixed(2) + ' horas)', 'error');
+                } else {
+                    log('Sessão válida (' + hoursElapsed.toFixed(2) + ' horas)', 'success');
+                }
+            } catch (e) {
+                log('Erro ao processar authData: ' + e.message, 'error');
+            }
+        };
+        
+        const goToLogin = () => {
+            log('Redirecionando para login...');
+            window.location.href = '/login.html';
+        };
+        
+        const goToPanel = () => {
+            log('Tentando abrir painel...');
+            window.location.href = '/painel.html';
+        };
+        
+        // Criar dados de teste
+        const createTestData = () => {
+            const testData = {
+                slug: 'teste-barbershop',
+                email: 'teste@example.com',
+                businessName: 'Barbearia Teste',
+                loginTime: Date.now()
+            };
+            localStorage.setItem('authData', JSON.stringify(testData));
+            log('Dados de teste criados!', 'success');
+            updateStorageInfo();
+        };
+        
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Página de debug carregada');
+            updateStorageInfo();
+            
+            // Adicionar botão de teste
+            const actionsDiv = document.querySelector('.space-y-3');
+            const testButton = document.createElement('button');
+            testButton.onclick = createTestData;
+            testButton.className = 'bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600';
+            testButton.innerHTML = '🧪 Criar Dados de Teste';
+            actionsDiv.appendChild(testButton);
+        });
+    </script>
+</body>
+</html>
