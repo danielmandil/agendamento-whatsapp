@@ -781,42 +781,58 @@
         let blockedDates = [];
         let selectedServiceIndex = null;
 
-        // AUTENTICAÇÃO SIMPLIFICADA
+        // ✅ FUNÇÃO DE AUTENTICAÇÃO CORRIGIDA
         async function checkAuth() {
             console.log('🔐 Verificando autenticação...');
             
             // Recuperar dados do localStorage (salvos pelo login.html)
             const authData = localStorage.getItem('authData');
             
+            console.log('📋 Dados de auth encontrados:', authData ? 'SIM' : 'NÃO');
+            
             if (!authData) {
-                console.log('❌ Não autenticado');
-                window.location.href = '/login.html';
+                console.log('❌ Dados de autenticação não encontrados');
+                redirectToLogin();
                 return false;
             }
             
             try {
                 const data = JSON.parse(authData);
-                const loginTime = data.loginTime || 0;
-                const now = Date.now();
-                const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+                console.log('📊 Dados parseados:', data);
+                
+                // Verificar se tem os campos necessários
+                if (!data.slug || !data.email || !data.loginTime) {
+                    console.log('❌ Dados incompletos');
+                    redirectToLogin();
+                    return false;
+                }
                 
                 // Verificar se a sessão expirou (24 horas)
-                if (hoursSinceLogin > 24) {
+                const now = Date.now();
+                const loginTimeMs = data.loginTime;
+                const hoursElapsed = (now - loginTimeMs) / (1000 * 60 * 60);
+                
+                console.log('⏰ Horas desde login:', hoursElapsed.toFixed(2));
+                
+                if (hoursElapsed > 24) {
                     console.log('❌ Sessão expirada');
                     logout();
                     return false;
                 }
                 
-                // Usar os dados salvos pelo login
+                // ✅ USAR O SLUG QUE VEM DO LOGIN
                 barberSlug = data.slug;
-                console.log('✅ Autenticado como:', data.businessName);
-                console.log('📌 Slug:', barberSlug);
+                userEmail = data.email;
+                
+                console.log('✅ Slug do login:', barberSlug);
+                console.log('✅ Email do usuário:', userEmail);
+                console.log('✅ Autenticação válida');
                 
                 return true;
                 
             } catch (error) {
-                console.error('❌ Erro ao processar dados de autenticação:', error);
-                logout();
+                console.error('❌ Erro ao processar dados de auth:', error);
+                redirectToLogin();
                 return false;
             }
         }
