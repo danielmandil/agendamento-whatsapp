@@ -816,6 +816,10 @@ app.get('/agendar', (req, res) => {
     res.sendFile(path.join(frontendPath, 'agendar.html'));
 });
 
+app.get('/painel-debug', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'painel-debug.html'));
+});
+
 app.get('/', (req, res) => {
     res.redirect('/setup.html');
 });
