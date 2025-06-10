@@ -807,6 +807,486 @@ app.get('/api/barbers/:slug/bookings', async (req, res) => {
     }
 });
 
+// =============================================
+// ADICIONAR ESTAS ROTAS NO SEU server.js
+// Colocar APÓS as rotas existentes e ANTES das rotas de páginas
+// =============================================
+
+// 6. Atualizar dados completos do barbeiro
+app.put('/api/barbers/:slug', async (req, res) => {
+    console.log(`\n📝 PUT /api/barbers/${req.params.slug}`);
+    console.log('📦 Dados para atualizar:', JSON.stringify(req.body, null, 2));
+    
+    try {
+        const { slug } = req.params;
+        
+        // Verificar se barbeiro existe
+        const barberDoc = await db.collection('barbers').doc(slug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        // Dados para atualizar (remover campos que não devem ser alterados)
+        const updateData = { ...req.body };
+        delete updateData.slug; // Não alterar o slug
+        delete updateData.createdAt; // Manter data de criação original
+        
+        // Adicionar data de atualização
+        updateData.updatedAt = new Date().toISOString();
+        
+        // Validações
+        if (updateData.services && updateData.services.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Deve ter pelo menos um serviço configurado'
+            });
+        }
+        
+        if (updateData.workingDays && updateData.workingDays.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Deve ter pelo menos um dia de funcionamento'
+            });
+        }
+        
+        // Atualizar no Firebase
+        await db.collection('barbers').doc(slug).update(updateData);
+        
+        console.log('✅ Barbeiro atualizado com sucesso!');
+        
+        res.json({
+            success: true,
+            message: 'Dados atualizados com sucesso!',
+            data: updateData
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar barbeiro:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// 7. Gerenciar datas bloqueadas
+app.post('/api/blocked-dates', async (req, res) => {
+    console.log('\n📅 POST /api/blocked-dates');
+    console.log('📦 Dados:', req.body);
+    
+    try {
+        const { barberSlug, date, action } = req.body;
+        
+        if (!barberSlug || !date || !action) {
+            return res.status(400).json({
+                success: false,
+                error: 'barberSlug, date e action são obrigatórios'
+            });
+        }
+        
+        if (!['block', 'unblock'].includes(action)) {
+            return res.status(400).json({
+                success: false,
+                error: 'action deve ser "block" ou "unblock"'
+            });
+        }
+        
+        // Verificar se barbeiro existe
+        const barberDoc = await db.collection('barbers').doc(barberSlug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        const barberData = barberDoc.data();
+        let blockedDates = barberData.blockedDates || [];
+        
+        if (action === 'block') {
+            // Adicionar data se não existir
+            if (!blockedDates.includes(date)) {
+                blockedDates.push(date);
+                blockedDates.sort(); // Manter ordenado
+                
+                // Cancelar agendamentos existentes nesta data
+                const bookingsSnapshot = await db.collection('bookings')
+                    .where('barberSlug', '==', barberSlug)
+                    .where('date', '==', date)
+                    .where('status', '==', 'confirmed')
+                    .get();
+                
+                const batch = db.batch();
+                bookingsSnapshot.forEach(doc => {
+                    batch.update(doc.ref, { 
+                        status: 'cancelled',
+                        cancelledAt: new Date().toISOString(),
+                        cancelReason: 'Data bloqueada pelo barbeiro'
+                    });
+                });
+                await batch.commit();
+                
+                console.log(`✅ Data ${date} bloqueada e ${bookingsSnapshot.size} agendamentos cancelados`);
+            }
+        } else {
+            // Remover data
+            blockedDates = blockedDates.filter(d => d !== date);
+            console.log(`✅ Data ${date} desbloqueada`);
+        }
+        
+        // Atualizar no Firebase
+        await db.collection('barbers').doc(barberSlug).update({
+            blockedDates: blockedDates,
+            updatedAt: new Date().toISOString()
+        });
+        
+        res.json({
+            success: true,
+            message: `Data ${action === 'block' ? 'bloqueada' : 'desbloqueada'} com sucesso!`,
+            data: { blockedDates }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao gerenciar datas bloqueadas:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// 8. Listar datas bloqueadas
+app.get('/api/barbers/:slug/blocked-dates', async (req, res) => {
+    console.log(`📥 GET /api/barbers/${req.params.slug}/blocked-dates`);
+    
+    try {
+        const { slug } = req.params;
+        
+        const barberDoc = await db.collection('barbers').doc(slug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        const barberData = barberDoc.data();
+        const blockedDates = barberData.blockedDates || [];
+        
+        console.log(`✅ ${blockedDates.length} datas bloqueadas encontradas`);
+        
+        res.json({
+            success: true,
+            data: blockedDates
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar datas bloqueadas:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// 9. Cancelar agendamento
+app.patch('/api/bookings/:bookingId/cancel', async (req, res) => {
+    console.log(`\n❌ PATCH /api/bookings/${req.params.bookingId}/cancel`);
+    
+    try {
+        const { bookingId } = req.params;
+        
+        // Buscar agendamento
+        const bookingDoc = await db.collection('bookings').doc(bookingId).get();
+        
+        if (!bookingDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                error: 'Agendamento não encontrado'
+            });
+        }
+        
+        const bookingData = bookingDoc.data();
+        
+        if (bookingData.status === 'cancelled') {
+            return res.status(400).json({
+                success: false,
+                error: 'Este agendamento já está cancelado'
+            });
+        }
+        
+        // Atualizar status
+        await db.collection('bookings').doc(bookingId).update({
+            status: 'cancelled',
+            cancelledAt: new Date().toISOString(),
+            cancelReason: req.body.reason || 'Cancelado pelo barbeiro'
+        });
+        
+        console.log('✅ Agendamento cancelado com sucesso');
+        
+        res.json({
+            success: true,
+            message: 'Agendamento cancelado com sucesso!'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao cancelar agendamento:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 10. Atualizar apenas horários de funcionamento
+app.patch('/api/barbers/:slug/schedule', async (req, res) => {
+    console.log(`\n🕐 PATCH /api/barbers/${req.params.slug}/schedule`);
+    console.log('📦 Novos horários:', req.body);
+    
+    try {
+        const { slug } = req.params;
+        const { openTime, closeTime } = req.body;
+        
+        if (!openTime || !closeTime) {
+            return res.status(400).json({
+                success: false,
+                error: 'openTime e closeTime são obrigatórios'
+            });
+        }
+        
+        if (parseInt(openTime) >= parseInt(closeTime)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Horário de abertura deve ser menor que horário de fechamento'
+            });
+        }
+        
+        // Verificar se barbeiro existe
+        const barberDoc = await db.collection('barbers').doc(slug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        // Atualizar horários
+        await db.collection('barbers').doc(slug).update({
+            openTime: parseInt(openTime),
+            closeTime: parseInt(closeTime),
+            updatedAt: new Date().toISOString()
+        });
+        
+        console.log('✅ Horários atualizados com sucesso');
+        
+        res.json({
+            success: true,
+            message: 'Horários atualizados com sucesso!'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar horários:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 11. Atualizar apenas dias de funcionamento
+app.patch('/api/barbers/:slug/working-days', async (req, res) => {
+    console.log(`\n📅 PATCH /api/barbers/${req.params.slug}/working-days`);
+    console.log('📦 Novos dias:', req.body);
+    
+    try {
+        const { slug } = req.params;
+        const { workingDays } = req.body;
+        
+        if (!workingDays || !Array.isArray(workingDays)) {
+            return res.status(400).json({
+                success: false,
+                error: 'workingDays deve ser um array'
+            });
+        }
+        
+        if (workingDays.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Deve ter pelo menos um dia de funcionamento'
+            });
+        }
+        
+        // Validar valores (0-6)
+        const validDays = workingDays.every(day => day >= 0 && day <= 6);
+        if (!validDays) {
+            return res.status(400).json({
+                success: false,
+                error: 'Dias devem ser números entre 0 (domingo) e 6 (sábado)'
+            });
+        }
+        
+        // Verificar se barbeiro existe
+        const barberDoc = await db.collection('barbers').doc(slug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        // Atualizar dias
+        await db.collection('barbers').doc(slug).update({
+            workingDays: workingDays.map(d => parseInt(d)),
+            updatedAt: new Date().toISOString()
+        });
+        
+        console.log('✅ Dias de funcionamento atualizados com sucesso');
+        
+        res.json({
+            success: true,
+            message: 'Dias de funcionamento atualizados com sucesso!'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar dias de funcionamento:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 12. Estatísticas do barbeiro
+app.get('/api/barbers/:slug/stats', async (req, res) => {
+    console.log(`📊 GET /api/barbers/${req.params.slug}/stats`);
+    
+    try {
+        const { slug } = req.params;
+        const { startDate, endDate } = req.query;
+        
+        // Buscar todos os agendamentos confirmados
+        let query = db.collection('bookings')
+            .where('barberSlug', '==', slug)
+            .where('status', '==', 'confirmed');
+        
+        if (startDate) {
+            query = query.where('date', '>=', startDate);
+        }
+        if (endDate) {
+            query = query.where('date', '<=', endDate);
+        }
+        
+        const snapshot = await query.get();
+        
+        // Calcular estatísticas
+        let totalBookings = 0;
+        let totalRevenue = 0;
+        const serviceStats = {};
+        const dailyStats = {};
+        
+        snapshot.forEach(doc => {
+            const booking = doc.data();
+            totalBookings++;
+            totalRevenue += booking.servicePrice || 0;
+            
+            // Estatísticas por serviço
+            const serviceName = booking.serviceName || 'Outros';
+            if (!serviceStats[serviceName]) {
+                serviceStats[serviceName] = { count: 0, revenue: 0 };
+            }
+            serviceStats[serviceName].count++;
+            serviceStats[serviceName].revenue += booking.servicePrice || 0;
+            
+            // Estatísticas por dia
+            if (!dailyStats[booking.date]) {
+                dailyStats[booking.date] = { count: 0, revenue: 0 };
+            }
+            dailyStats[booking.date].count++;
+            dailyStats[booking.date].revenue += booking.servicePrice || 0;
+        });
+        
+        console.log(`✅ Estatísticas calculadas: ${totalBookings} agendamentos, R$ ${totalRevenue.toFixed(2)} de receita`);
+        
+        res.json({
+            success: true,
+            data: {
+                totalBookings,
+                totalRevenue,
+                averageTicket: totalBookings > 0 ? totalRevenue / totalBookings : 0,
+                serviceStats,
+                dailyStats,
+                period: { startDate, endDate }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao calcular estatísticas:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 13. Deletar barbeiro (soft delete)
+app.delete('/api/barbers/:slug', async (req, res) => {
+    console.log(`\n🗑️ DELETE /api/barbers/${req.params.slug}`);
+    
+    try {
+        const { slug } = req.params;
+        
+        // Verificar se barbeiro existe
+        const barberDoc = await db.collection('barbers').doc(slug).get();
+        if (!barberDoc.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado' 
+            });
+        }
+        
+        // Soft delete - apenas marca como deletado
+        await db.collection('barbers').doc(slug).update({
+            deletedAt: new Date().toISOString(),
+            active: false
+        });
+        
+        // Cancelar todos os agendamentos futuros
+        const today = new Date().toISOString().split('T')[0];
+        const bookingsSnapshot = await db.collection('bookings')
+            .where('barberSlug', '==', slug)
+            .where('date', '>=', today)
+            .where('status', '==', 'confirmed')
+            .get();
+        
+        const batch = db.batch();
+        bookingsSnapshot.forEach(doc => {
+            batch.update(doc.ref, {
+                status: 'cancelled',
+                cancelledAt: new Date().toISOString(),
+                cancelReason: 'Barbearia desativada'
+            });
+        });
+        await batch.commit();
+        
+        console.log(`✅ Barbeiro desativado e ${bookingsSnapshot.size} agendamentos futuros cancelados`);
+        
+        res.json({
+            success: true,
+            message: 'Barbearia desativada com sucesso!'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao deletar barbeiro:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Rotas para páginas
 app.get('/setup', (req, res) => {
     res.sendFile(path.join(frontendPath, 'setup.html'));

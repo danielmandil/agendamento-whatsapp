@@ -1330,13 +1330,47 @@
                 return;
             }
             
-            // Por enquanto, apenas simular salvamento
-            alert('✅ Configurações atualizadas com sucesso! (Simulado)');
-            closeConfigModal();
+            const updatedData = {
+                businessName: document.getElementById('updateBusinessName').value.trim(),
+                whatsapp: document.getElementById('updateWhatsapp').value.trim(),
+                address: document.getElementById('updateAddress').value.trim(),
+                openTime: parseInt(document.getElementById('updateOpenTime').value),
+                closeTime: parseInt(document.getElementById('updateCloseTime').value),
+                bufferTime: parseInt(document.getElementById('updateBufferTime').value),
+                workingDays: workingDays,
+                services: services,
+                minAdvanceTime: parseInt(document.getElementById('updateMinAdvanceTime').value),
+                maxBookingsPerDay: parseInt(document.getElementById('updateMaxBookingsPerDay').value) || 0,
+                hasLunchBreak: document.getElementById('updateHasLunchBreak').checked,
+                lunchStart: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchStart').value : null,
+                lunchEnd: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchEnd').value : null,
+            };
             
-            // Recarregar dados
-            await loadBarberData();
-            await loadBookings();
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Configurações atualizadas com sucesso!');
+                    closeConfigModal();
+                    
+                    // Recarregar dados
+                    await loadBarberData();
+                    await loadBookings();
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar:', error);
+                alert('❌ Erro ao atualizar configurações');
+            }
         }
 
         // Preencher serviços
@@ -1576,29 +1610,86 @@
                 return;
             }
             
-            // Simular bloqueio/desbloqueio
-            const index = blockedDates.indexOf(selectedDate);
-            if (index > -1) {
-                blockedDates.splice(index, 1);
-                alert(`✅ Data ${new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR')} foi desbloqueada!`);
-            } else {
-                blockedDates.push(selectedDate);
-                alert(`✅ Data ${new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR')} foi bloqueada!`);
-            }
+            const button = document.getElementById('blockDateBtn');
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Processando...';
             
-            dateInput.value = '';
-            updateBlockedDatesList();
-            generateCalendar();
+            try {
+                const isBlocked = blockedDates.includes(selectedDate);
+                const action = isBlocked ? 'unblock' : 'block';
+                
+                const response = await fetch('/api/blocked-dates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        barberSlug,
+                        date: selectedDate,
+                        action: action
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Atualizar lista local
+                    if (action === 'block') {
+                        blockedDates.push(selectedDate);
+                    } else {
+                        blockedDates = blockedDates.filter(d => d !== selectedDate);
+                    }
+                    
+                    updateBlockedDatesList();
+                    generateCalendar();
+                    
+                    const formattedDate = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR');
+                    alert(`✅ Data ${formattedDate} foi ${action === 'block' ? 'bloqueada' : 'desbloqueada'} com sucesso!`);
+                    
+                    dateInput.value = '';
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao alterar disponibilidade:', error);
+                alert('❌ Erro ao alterar disponibilidade da data');
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
         }
 
         // Desbloquear data
-        function unblockDate(dateString) {
-            const index = blockedDates.indexOf(dateString);
-            if (index > -1) {
-                blockedDates.splice(index, 1);
-                updateBlockedDatesList();
-                generateCalendar();
-                alert(`✅ Data ${new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR')} foi desbloqueada!`);
+        async function unblockDate(dateString) {
+            try {
+                const response = await fetch('/api/blocked-dates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        barberSlug,
+                        date: dateString,
+                        action: 'unblock'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    blockedDates = blockedDates.filter(d => d !== dateString);
+                    updateBlockedDatesList();
+                    generateCalendar();
+                    
+                    const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
+                    alert(`✅ Data ${formattedDate} foi desbloqueada com sucesso!`);
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao desbloquear data:', error);
+                alert('❌ Erro ao desbloquear data');
             }
         }
 
@@ -1612,13 +1703,37 @@
                 return;
             }
             
-            // Simular atualização
-            alert('✅ Horários atualizados com sucesso! (Simulado)');
-            
-            // Atualizar dados locais
-            if (barberData) {
-                barberData.openTime = parseInt(openTime);
-                barberData.closeTime = parseInt(closeTime);
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/schedule`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        openTime: parseInt(openTime),
+                        closeTime: parseInt(closeTime)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Horários atualizados com sucesso!');
+                    
+                    // Atualizar dados locais
+                    if (barberData) {
+                        barberData.openTime = parseInt(openTime);
+                        barberData.closeTime = parseInt(closeTime);
+                    }
+                    
+                    // Recarregar dados
+                    await loadBarberData();
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar horários:', error);
+                alert('❌ Erro ao atualizar horários');
             }
         }
 
@@ -1634,13 +1749,36 @@
                 return;
             }
             
-            // Simular atualização
-            alert('✅ Dias de funcionamento atualizados com sucesso! (Simulado)');
-            
-            // Atualizar dados locais
-            if (barberData) {
-                barberData.workingDays = selectedDays;
-                generateCalendar();
+            try {
+                const response = await fetch(`/api/barbers/${barberSlug}/working-days`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workingDays: selectedDays
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Dias de funcionamento atualizados com sucesso!');
+                    
+                    // Atualizar dados locais
+                    if (barberData) {
+                        barberData.workingDays = selectedDays;
+                        generateCalendar();
+                    }
+                    
+                    // Recarregar dados
+                    await loadBarberData();
+                } else {
+                    alert('❌ Erro: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar dias:', error);
+                alert('❌ Erro ao atualizar dias de funcionamento');
             }
         }
 
@@ -1700,19 +1838,29 @@
                 return;
             }
             
-            // Simular cancelamento
-            alert('✅ Agendamento cancelado com sucesso! (Simulado)');
-            closeBookingModal();
-            
-            // Atualizar status local
-            const bookingIndex = allBookings.findIndex(b => b.bookingId === selectedBooking.bookingId);
-            if (bookingIndex > -1) {
-                allBookings[bookingIndex].status = 'cancelled';
-                generateCalendar();
-                if (currentView === 'list') {
-                    displayBookingsList(allBookings);
+            try {
+                const response = await fetch(`/api/bookings/${selectedBooking.bookingId}/cancel`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: 'Cancelado pelo barbeiro'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Agendamento cancelado com sucesso!');
+                    closeBookingModal();
+                    await loadBookings();
+                } else {
+                    alert('❌ Erro: ' + result.error);
                 }
-                updateStatistics();
+            } catch (error) {
+                console.error('Erro ao cancelar agendamento:', error);
+                alert('❌ Erro ao cancelar agendamento');
             }
         }
 
