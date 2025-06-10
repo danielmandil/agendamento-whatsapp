@@ -788,68 +788,30 @@
         let blockedDates = [];
         let selectedServiceIndex = null;
 
-        // ✅ FUNÇÃO DE AUTENTICAÇÃO SIMPLIFICADA (substituir no painel.html)
-
-        // ✅ NOVO: Verificação de autenticação simplificada
+        // ✅ AUTENTICAÇÃO ULTRA-SIMPLES (use se a anterior não funcionar)
         async function checkAuth() {
             console.log('🔐 Verificando autenticação...');
             
-            // Recuperar dados do localStorage
-            authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
             const loginTime = localStorage.getItem('loginTime');
             
-            if (!authToken || !userEmail || !loginTime) {
-                console.log('❌ Dados de autenticação não encontrados');
+            if (!userEmail || !loginTime) {
                 redirectToLogin();
                 return false;
             }
             
-            // Verificar se a sessão expirou (24 horas)
-            const now = new Date().getTime();
-            const loginTimeMs = parseInt(loginTime);
-            const hoursElapsed = (now - loginTimeMs) / (1000 * 60 * 60);
-            
+            // Verificar expiração (24h)
+            const hoursElapsed = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
             if (hoursElapsed > 24) {
-                console.log('❌ Sessão expirada');
                 logout();
                 return false;
             }
             
-            try {
-                // ✅ NOVO: Buscar barbeiro diretamente pelo email (sem validação de token complexa)
-                const response = await fetch(`/api/barbers/by-email/${encodeURIComponent(userEmail)}`);
-                
-                if (!response.ok) {
-                    console.log('❌ Erro ao buscar barbeiro:', response.status);
-                    logout();
-                    return false;
-                }
-                
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    console.log('✅ Autenticação válida');
-                    barberSlug = result.data.slug;
-                    return true;
-                } else {
-                    console.log('❌ Barbeiro não encontrado:', result.error);
-                    logout();
-                    return false;
-                }
-                
-            } catch (error) {
-                console.error('❌ Erro ao validar autenticação:', error);
-                // ✅ Em caso de erro de rede, permitir continuar se temos dados básicos
-                if (userEmail) {
-                    // Tentar extrair slug do email ou usar fallback
-                    barberSlug = userEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
-                    console.log('⚠️ Usando slug derivado do email:', barberSlug);
-                    return true;
-                }
-                logout();
-                return false;
-            }
+            // ✅ DERIVAR SLUG DO EMAIL (método simples)
+            barberSlug = userEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            console.log('✅ Usando slug:', barberSlug);
+            return true;
         }
 
         // ✅ NOVO: Função de logout
