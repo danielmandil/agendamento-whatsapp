@@ -393,8 +393,8 @@
             }, 4000);
         }
 
-        // Verificar se já está logado
-        window.addEventListener('DOMContentLoaded', () => {
+  // Verificar se já está logado
+  window.addEventListener('DOMContentLoaded', () => {
             const authData = localStorage.getItem('authData');
             if (authData) {
                 try {
@@ -404,17 +404,18 @@
                     const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
                     
                     // Se logou há menos de 24 horas, redirecionar
-                    if (hoursSinceLogin < 24) {
+                    if (hoursSinceLogin < 24 && data.slug && data.email) {
                         showSuccess('Redirecionando para o painel...');
                         setTimeout(() => {
-                            window.location.href = `/painel.html?slug=${data.slug}`;
+                            window.location.href = '/painel.html';
                         }, 1000);
                         return;
                     } else {
-                        // Login expirado
+                        // Login expirado ou dados inválidos
                         localStorage.removeItem('authData');
                     }
                 } catch (error) {
+                    console.error('Erro ao verificar login automático:', error);
                     localStorage.removeItem('authData');
                 }
             }
