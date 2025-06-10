@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Agendamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .code-input {
+            letter-spacing: 0.5em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Partículas de fundo (opcional) -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-32 w-80 h-80 bg-white opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-20 -left-32 w-60 h-60 bg-white opacity-10 rounded-full"></div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="relative w-full max-w-md">
+        <!-- Logo/Título -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+                <span class="text-2xl">✂️</span>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Sistema de Agendamento</h1>
+            <p class="text-white/80">Acesse o painel da sua barbearia</p>
+        </div>
+
+        <!-- Card de Login -->
+        <div class="glass-effect rounded-2xl shadow-2xl p-8">
+            <!-- Step 1: Solicitar Email -->
+            <div id="emailStep" class="space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">
+                        🔐 Fazer Login
+                    </h2>
+                    <p class="text-gray-600 text-sm">
+                        Digite seu email para receber o código de acesso
+                    </p>
+                </div>
+
+                <form id="emailForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">
+                            📧 Email da barbearia
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email"
+                            placeholder="seu-email@gmail.com"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                            required
+                        >
+                    </div>
+
+                    <button 
+                        type="submit"
+                        id="requestCodeBtn"
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+                    >
+                        📨 Enviar Código
+                    </button>
+                </form>
+
+                <!-- Link para criar conta -->
+                <div class="text-center pt-4 border-t border-gray-200">
+                    <p class="text-gray-600 text-sm">
+                        Ainda não tem uma conta?
+                    </p>
+                    <a href="/setup.html" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                        ✨ Criar minha barbearia
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 2: Verificar Código -->
+            <div id="codeStep" class="space-y-6 hidden">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">📧</span>
+                    </div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">
+                        Código Enviado!
+                    </h2>
+                    <p class="text-gray-600 text-sm">
+                        Enviamos um código de 6 dígitos para<br>
+                        <span id="emailDisplay" class="font-medium text-blue-600"></span>
+                    </p>
+                </div>
+
+                <form id="codeForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2 text-center">
+                            🔢 Digite o código recebido
+                        </label>
+                        <input 
+                            type="text" 
+                            id="code"
+                            placeholder="000000"
+                            maxlength="6"
+                            class="code-input w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors text-2xl font-mono"
+                            required
+                        >
+                        <p class="text-xs text-gray-500 mt-2 text-center">
+                            O código expira em <span id="countdown">5:00</span>
+                        </p>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        id="verifyCodeBtn"
+                        class="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-300"
+                    >
+                        ✅ Verificar Código
+                    </button>
+                </form>
+
+                <!-- Botões de ação -->
+                <div class="flex gap-3">
+                    <button 
+                        onclick="goBackToEmail()"
+                        class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                    >
+                        ← Voltar
+                    </button>
+                    <button 
+                        onclick="resendCode()"
+                        id="resendBtn"
+                        class="flex-1 bg-blue-100 text-blue-700 py-2 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                        disabled
+                    >
+                        🔄 Reenviar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-700">Verificando...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let countdownInterval;
+        let resendTimeout;
+
+        // Form de email
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const btn = document.getElementById('requestCodeBtn');
+            
+            if (!email) {
+                showError('Digite seu email');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '📨 Enviando...';
+
+            try {
+                const response = await fetch('/api/auth/request-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showCodeStep(email);
+                    showSuccess('Código enviado! Verifique seu email e spam.');
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erro de conexão. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📨 Enviar Código';
+            }
+        });
+
+        // Form de código
+        document.getElementById('codeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const code = document.getElementById('code').value.trim();
+            const btn = document.getElementById('verifyCodeBtn');
+            
+            if (!code || code.length !== 6) {
+                showError('Digite o código de 6 dígitos');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '✅ Verificando...';
+            showLoading(true);
+
+            try {
+                const response = await fetch('/api/auth/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Salvar dados de login
+                    localStorage.setItem('authData', JSON.stringify({
+                        slug: result.data.slug,
+                        businessName: result.data.businessName,
+                        email: result.data.email,
+                        loginTime: Date.now()
+                    }));
+
+                    showSuccess('Login realizado com sucesso! Redirecionando...');
+                    
+                    setTimeout(() => {
+                        window.location.href = `/painel.html?slug=${result.data.slug}`;
+                    }, 1500);
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erro de conexão. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✅ Verificar Código';
+                showLoading(false);
+            }
+        });
+
+        // Auto-format do código
+        document.getElementById('code').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 6) value = value.slice(0, 6);
+            e.target.value = value;
+        });
+
+        // Mostrar step do código
+        function showCodeStep(email) {
+            document.getElementById('emailStep').classList.add('hidden');
+            document.getElementById('codeStep').classList.remove('hidden');
+            document.getElementById('emailDisplay').textContent = email;
+            
+            startCountdown();
+            startResendTimer();
+            
+            // Focar no campo de código
+            setTimeout(() => {
+                document.getElementById('code').focus();
+            }, 100);
+        }
+
+        // Voltar para email
+        function goBackToEmail() {
+            document.getElementById('codeStep').classList.add('hidden');
+            document.getElementById('emailStep').classList.remove('hidden');
+            
+            clearInterval(countdownInterval);
+            clearTimeout(resendTimeout);
+            
+            // Limpar código
+            document.getElementById('code').value = '';
+        }
+
+        // Reenviar código
+        async function resendCode() {
+            const email = document.getElementById('email').value.trim();
+            const btn = document.getElementById('resendBtn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '🔄 Enviando...';
+
+            try {
+                const response = await fetch('/api/auth/request-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess('Novo código enviado!');
+                    startCountdown();
+                    startResendTimer();
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erro ao reenviar. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔄 Reenviar';
+            }
+        }
+
+        // Countdown de 5 minutos
+        function startCountdown() {
+            let timeLeft = 300; // 5 minutos
+            const countdownEl = document.getElementById('countdown');
+            
+            clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                timeLeft--;
+                
+                if (timeLeft < 0) {
+                    clearInterval(countdownInterval);
+                    countdownEl.textContent = 'Expirado';
+                    showError('Código expirado. Solicite um novo.');
+                }
+            }, 1000);
+        }
+
+        // Timer para habilitar reenvio (30 segundos)
+        function startResendTimer() {
+            const btn = document.getElementById('resendBtn');
+            let timeLeft = 30;
+            
+            btn.disabled = true;
+            
+            clearTimeout(resendTimeout);
+            
+            const updateBtn = () => {
+                if (timeLeft > 0) {
+                    btn.innerHTML = `🔄 Aguarde ${timeLeft}s`;
+                    timeLeft--;
+                    resendTimeout = setTimeout(updateBtn, 1000);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '🔄 Reenviar';
+                }
+            };
+            
+            updateBtn();
+        }
+
+        // Funções de UI
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.toggle('hidden', !show);
+        }
+
+        function showError(message) {
+            // Toast de erro simples
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform';
+            toast.innerHTML = `❌ ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showSuccess(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform';
+            toast.innerHTML = `✅ ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Verificar se já está logado
+        window.addEventListener('DOMContentLoaded', () => {
+            const authData = localStorage.getItem('authData');
+            if (authData) {
+                try {
+                    const data = JSON.parse(authData);
+                    const loginTime = data.loginTime || 0;
+                    const now = Date.now();
+                    const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+                    
+                    // Se logou há menos de 24 horas, redirecionar
+                    if (hoursSinceLogin < 24) {
+                        showSuccess('Redirecionando para o painel...');
+                        setTimeout(() => {
+                            window.location.href = `/painel.html?slug=${data.slug}`;
+                        }, 1000);
+                        return;
+                    } else {
+                        // Login expirado
+                        localStorage.removeItem('authData');
+                    }
+                } catch (error) {
+                    localStorage.removeItem('authData');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
