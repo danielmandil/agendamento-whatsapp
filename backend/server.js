@@ -361,6 +361,48 @@ async function sendLoginCode(email, code, businessName) {
     }
 }
 
+// ✅ ADICIONAR ESTA ROTA NO server.js (após as outras rotas de barbeiros)
+
+// Buscar barbeiro por email (para autenticação)
+app.get('/api/barbers/by-email/:email', async (req, res) => {
+    console.log(`📥 GET /api/barbers/by-email/${req.params.email}`);
+    
+    try {
+        const email = decodeURIComponent(req.params.email).toLowerCase().trim();
+        
+        const snapshot = await db.collection('barbers')
+            .where('email', '==', email)
+            .limit(1)
+            .get();
+        
+        if (snapshot.empty) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Barbeiro não encontrado para este email' 
+            });
+        }
+        
+        const barberDoc = snapshot.docs[0];
+        const barberData = barberDoc.data();
+        
+        res.json({
+            success: true,
+            data: {
+                slug: barberData.slug,
+                email: barberData.email,
+                businessName: barberData.businessName
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar barbeiro por email:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
 // =============================================
 // ROTAS EXISTENTES (mantidas como estavam)
 // =============================================
