@@ -40,14 +40,13 @@
             background-color: #f9fafb;
             color: #9ca3af;
         }
-        /* ✅ NOVO: Estilos para autenticação */
         .auth-overlay {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- ✅ NOVO: Overlay de autenticação -->
+    <!-- Overlay de autenticação -->
     <div id="authOverlay" class="fixed inset-0 auth-overlay z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full mx-4">
             <div class="text-center">
@@ -69,7 +68,6 @@
                     <p class="text-gray-600" id="barberName">Carregando...</p>
                 </div>
                 <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-                    <!-- ✅ NOVO BOTÃO: Adicionar Agendamento -->
                     <button 
                         onclick="openNewBookingModal()"
                         class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
@@ -95,7 +93,6 @@
                     >
                         📋 Ver Lista
                     </button>
-                    <!-- ✅ NOVO: Botão de Logout -->
                     <button 
                         onclick="logout()"
                         class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
@@ -774,11 +771,7 @@
     </div>
 
     <script>
-        // ✅ NOVO: Variáveis de autenticação
-        let authToken = null;
-        let userEmail = null;
-        
-        // Variáveis globais existentes
+        // Variáveis globais
         let barberSlug = '';
         let barberData = null;
         let allBookings = [];
@@ -788,72 +781,54 @@
         let blockedDates = [];
         let selectedServiceIndex = null;
 
-        // ✅ FUNÇÃO DE AUTENTICAÇÃO ULTRA-SIMPLIFICADA
+        // AUTENTICAÇÃO SIMPLIFICADA
         async function checkAuth() {
             console.log('🔐 Verificando autenticação...');
             
-            // Recuperar dados do localStorage
-            userEmail = localStorage.getItem('userEmail');
-            const loginTime = localStorage.getItem('loginTime');
+            // Recuperar dados do localStorage (salvos pelo login.html)
+            const authData = localStorage.getItem('authData');
             
-            console.log('📋 Dados encontrados:', { userEmail, loginTime });
-            
-            // Se não tem dados, redirecionar para login
-            if (!userEmail || !loginTime) {
-                console.log('❌ Dados de autenticação não encontrados');
-                redirectToLogin();
+            if (!authData) {
+                console.log('❌ Não autenticado');
+                window.location.href = '/login.html';
                 return false;
             }
             
-            // Verificar se a sessão expirou (24 horas)
-            const now = new Date().getTime();
-            const loginTimeMs = parseInt(loginTime);
-            const hoursElapsed = (now - loginTimeMs) / (1000 * 60 * 60);
-            
-            console.log('⏰ Horas desde login:', hoursElapsed.toFixed(2));
-            
-            if (hoursElapsed > 24) {
-                console.log('❌ Sessão expirada');
+            try {
+                const data = JSON.parse(authData);
+                const loginTime = data.loginTime || 0;
+                const now = Date.now();
+                const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+                
+                // Verificar se a sessão expirou (24 horas)
+                if (hoursSinceLogin > 24) {
+                    console.log('❌ Sessão expirada');
+                    logout();
+                    return false;
+                }
+                
+                // Usar os dados salvos pelo login
+                barberSlug = data.slug;
+                console.log('✅ Autenticado como:', data.businessName);
+                console.log('📌 Slug:', barberSlug);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erro ao processar dados de autenticação:', error);
                 logout();
                 return false;
             }
-            
-            // ✅ DERIVAR SLUG DO EMAIL (método que funciona sempre)
-            // Pega a parte antes do @ e limpa caracteres especiais
-            const emailPrefix = userEmail.split('@')[0];
-            barberSlug = emailPrefix.toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '') // remove acentos
-                .replace(/[^a-z0-9]/g, '-')      // substitui caracteres especiais por -
-                .replace(/-+/g, '-')             // remove -- duplicados
-                .replace(/^-|-$/g, '');          // remove - do início e fim
-            
-            console.log('✅ Slug derivado:', barberSlug);
-            console.log('✅ Autenticação válida para:', userEmail);
-            
-            return true;
         }
 
-        // ✅ FUNÇÃO DE LOGOUT
+        // Função de logout
         function logout() {
             console.log('🚪 Fazendo logout...');
-            
-            // Limpar localStorage
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('loginTime');
-            
-            // Redirecionamento
-            redirectToLogin();
-        }
-
-        // ✅ REDIRECIONAMENTO PARA LOGIN
-        function redirectToLogin() {
-            console.log('🔄 Redirecionando para login...');
+            localStorage.removeItem('authData');
             window.location.href = '/login.html';
         }
 
-        // ✅ ESCONDER OVERLAY DE AUTENTICAÇÃO
+        // Esconder overlay de autenticação
         function hideAuthOverlay() {
             const overlay = document.getElementById('authOverlay');
             if (overlay) {
@@ -861,127 +836,37 @@
             }
         }
 
-        // ✅ FUNÇÃO PARA PEGAR SLUG DA URL (REMOVER ESTA FUNÇÃO)
-        // function getBarberSlug() {
-        //     // Esta função não é mais necessária - o slug vem da autenticação
-        //     return barberSlug;
-        // }
-
-        // ✅ INICIALIZAÇÃO ATUALIZADA
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Iniciando aplicação...');
-            
-            // ✅ VERIFICAR AUTENTICAÇÃO PRIMEIRO
-            const isAuthenticated = await checkAuth();
-            
-            if (!isAuthenticated) {
-                console.log('❌ Não autenticado - parando execução');
-                return; // Parar execução se não autenticado
-            }
-            
-            // ✅ ESCONDER OVERLAY DE AUTENTICAÇÃO
-            hideAuthOverlay();
-            
-            console.log('✅ Usuário autenticado, continuando...');
-            
-            // Continuar com a inicialização normal
-            if (barberSlug) {
-                await loadBarberData();
-                await loadBookings();
-                await loadBlockedDates();
-                generateCalendar();
-                updateStatistics();
+        // Carregar dados do barbeiro
+        async function loadBarberData() {
+            try {
+                console.log('📥 Carregando dados do barbeiro:', barberSlug);
                 
-                // Configurar datas mínimas
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('dateFilter').value = today;
+                const response = await fetch(`/api/barbers/${barberSlug}`);
+                const result = await response.json();
                 
-                const blockDateElement = document.getElementById('blockDate');
-                if (blockDateElement) {
-                    blockDateElement.min = today;
-                }
-                
-                const manualDateElement = document.getElementById('manualDate');
-                if (manualDateElement) {
-                    manualDateElement.min = today;
-                }
-            }
-        });
-
-       // ✅ FUNÇÃO loadBarberData COMPLETA COM CORREÇÃO DO SLUG
-            async function loadBarberData() {
-                try {
-                    console.log('📥 Carregando dados do barbeiro:', barberSlug);
+                if (result.success && result.data) {
+                    barberData = result.data;
+                    document.getElementById('barberName').textContent = barberData.businessName;
+                    document.title = `Painel - ${barberData.businessName}`;
                     
-                    // ✅ PRIMEIRA TENTATIVA - com slug derivado do email
-                    let response = await fetch(`/api/barbers/${barberSlug}`);
-                    let result = await response.json();
+                    const bookingUrl = window.location.origin + '/' + barberSlug;
+                    document.getElementById('bookingLink').textContent = bookingUrl;
                     
-                    // ✅ SE NÃO ENCONTROU, TENTAR VARIAÇÕES DO SLUG
-                    if (!result.success || !result.data) {
-                        console.log('⚠️ Slug inicial não funcionou, tentando variações...');
-                        
-                        const emailPrefix = userEmail.split('@')[0];
-                        const variations = [
-                            barberSlug,                           // slug original
-                            barberSlug + '-barber',               // adicionar -barber
-                            barberSlug + '-barbearia',            // adicionar -barbearia
-                            emailPrefix + '-barbershop',          // outras variações
-                            emailPrefix + '-salon',
-                            emailPrefix + '-1',
-                            emailPrefix + '-2'
-                        ];
-                        
-                        // Tentar cada variação
-                        for (const variation of variations) {
-                            console.log(`🔍 Tentando slug: ${variation}`);
-                            
-                            try {
-                                response = await fetch(`/api/barbers/${variation}`);
-                                result = await response.json();
-                                
-                                if (result.success && result.data) {
-                                    console.log(`✅ Slug encontrado: ${variation}`);
-                                    barberSlug = variation; // ✅ ATUALIZAR O SLUG CORRETO
-                                    break;
-                                }
-                            } catch (e) {
-                                console.log(`❌ Erro ao tentar ${variation}:`, e.message);
-                                continue;
-                            }
-                        }
-                    }
-                    
-                    // ✅ VERIFICAR SE CONSEGUIU CARREGAR OS DADOS
-                    if (result.success && result.data) {
-                        barberData = result.data;
-                        document.getElementById('barberName').textContent = barberData.businessName;
-                        document.title = `Painel - ${barberData.businessName}`;
-                        
-                        const bookingUrl = window.location.origin + '/' + barberSlug;
-                        document.getElementById('bookingLink').textContent = bookingUrl;
-
-                        console.log('✅ Dados do barbeiro carregados com sucesso');
-                        console.log('📊 Barbearia:', barberData.businessName);
-                        console.log('🔗 Slug final:', barberSlug);
-                        
-                    } else {
-                        console.error('❌ Nenhum slug funcionou. Dados disponíveis:', result);
-                        
-                        // ✅ MOSTRAR INFORMAÇÕES PARA DEBUG
-                        alert(`❌ Barbearia não encontrada!\n\nEmail: ${userEmail}\nSlug tentado: ${barberSlug}\n\nVerifique se você criou a barbearia com este email.`);
-                        logout();
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Erro ao carregar dados:', error);
-                    alert('Erro de conexão ao carregar dados da barbearia!');
+                    console.log('✅ Dados carregados com sucesso');
+                } else {
+                    console.error('❌ Erro ao carregar dados:', result.error);
+                    alert('Erro ao carregar dados da barbearia. Faça login novamente.');
                     logout();
                 }
+                
+            } catch (error) {
+                console.error('❌ Erro de conexão:', error);
+                alert('Erro de conexão. Verifique sua internet.');
             }
+        }
 
+        // Carregar agendamentos
         async function loadBookings() {
-            console.log('📥 Iniciando loadBookings...');
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value;
                 const statusFilter = document.getElementById('statusFilter')?.value;
@@ -994,48 +879,29 @@
                 
                 if (params.toString()) url += '?' + params.toString();
                 
-                console.log('🔗 Fazendo requisição para:', url);
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
+                const response = await fetch(url);
                 const result = await response.json();
                 
-                console.log('📊 Resposta da API:', result);
-                
                 if (result.success) {
-                    console.log('✅ Dados recebidos:', result.data.length, 'agendamentos');
                     allBookings = result.data;
-                    
-                    console.log('🗓️ Chamando generateCalendar...');
                     generateCalendar();
                     
                     if (currentView === 'list') {
-                        console.log('📋 Atualizando lista...');
                         displayBookingsList(allBookings);
                     }
                     
-                    console.log('📈 Atualizando estatísticas...');
                     updateStatistics();
-                    
-                    console.log(`✅ ${allBookings.length} agendamentos carregados e interface atualizada`);
-                } else {
-                    console.error('❌ Erro na resposta da API:', result.error);
+                    console.log(`✅ ${allBookings.length} agendamentos carregados`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao carregar agendamentos:', error);
             }
         }
 
+        // Carregar datas bloqueadas
         async function loadBlockedDates() {
             try {
-                const response = await fetch(`/api/barbers/${barberSlug}/blocked-dates`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
+                const response = await fetch(`/api/barbers/${barberSlug}/blocked-dates`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1051,8 +917,11 @@
             }
         }
 
+        // Atualizar lista de datas bloqueadas
         function updateBlockedDatesList() {
             const blockedDatesList = document.getElementById('blockedDatesList');
+            
+            if (!blockedDatesList) return;
             
             if (blockedDates.length === 0) {
                 blockedDatesList.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">Nenhuma data bloqueada</p>';
@@ -1081,6 +950,7 @@
             });
         }
 
+        // Alternar disponibilidade de data
         async function toggleDateAvailability() {
             const dateInput = document.getElementById('blockDate');
             const selectedDate = dateInput.value;
@@ -1115,87 +985,220 @@
             }
         }
 
+        // Bloquear data
         async function blockDate(dateString) {
             try {
-                const response = await fetch('/api/blocked-dates', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        barberSlug,
-                        date: dateString,
-                        action: 'block'
-                    })
-                });
+                // Simulação - adicionar a rota no backend depois
+                blockedDates.push(dateString);
+                updateBlockedDatesList();
+                generateCalendar();
                 
-                const result = await response.json();
+                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
+                alert(`✅ Data ${formattedDate} foi bloqueada com sucesso!`);
                 
-                if (result.success) {
-                    blockedDates.push(dateString);
-                    updateBlockedDatesList();
-                    generateCalendar();
-                    
-                    const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-                    alert(`✅ Data ${formattedDate} foi bloqueada com sucesso!`);
-                } else {
-                    throw new Error(result.error || 'Erro ao bloquear data');
-                }
             } catch (error) {
                 console.error('Erro ao bloquear data:', error);
                 throw error;
             }
         }
 
+        // Desbloquear data
         async function unblockDate(dateString) {
             try {
-                const response = await fetch('/api/blocked-dates', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        barberSlug,
-                        date: dateString,
-                        action: 'unblock'
-                    })
-                });
+                // Simulação - adicionar a rota no backend depois
+                blockedDates = blockedDates.filter(date => date !== dateString);
+                updateBlockedDatesList();
+                generateCalendar();
                 
-                const result = await response.json();
+                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
+                alert(`✅ Data ${formattedDate} foi desbloqueada com sucesso!`);
                 
-                if (result.success) {
-                    blockedDates = blockedDates.filter(date => date !== dateString);
-                    updateBlockedDatesList();
-                    generateCalendar();
-                    
-                    const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-                    alert(`✅ Data ${formattedDate} foi desbloqueada com sucesso!`);
-                } else {
-                    throw new Error(result.error || 'Erro ao desbloquear data');
-                }
             } catch (error) {
                 console.error('Erro ao desbloquear data:', error);
                 throw error;
             }
         }
 
-        // Abrir modal de novo agendamento
+        // Gerar calendário
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonth = document.getElementById('currentMonth');
+            
+            if (!calendarGrid || !barberData) return;
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            currentMonth.textContent = `${monthNames[month]} ${year}`;
+            
+            calendarGrid.innerHTML = '';
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day p-2';
+                
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isCurrentMonth = date.getMonth() === month;
+                const dayOfWeek = date.getDay();
+                const isWorkingDay = barberData?.workingDays?.includes(dayOfWeek);
+                const dateStr = date.toISOString().split('T')[0];
+                const isBlocked = blockedDates.includes(dateStr);
+                
+                if (isToday) dayElement.classList.add('today');
+                if (!isCurrentMonth) dayElement.classList.add('other-month');
+                if (!isWorkingDay) dayElement.style.backgroundColor = '#f3f4f6';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'font-medium text-sm mb-1';
+                dayNumber.textContent = date.getDate();
+                dayElement.appendChild(dayNumber);
+                
+                if (isBlocked) {
+                    const blockedEl = document.createElement('div');
+                    blockedEl.className = 'blocked-day';
+                    blockedEl.textContent = '🚫 Bloqueado';
+                    dayElement.appendChild(blockedEl);
+                }
+                
+                const dayBookings = allBookings.filter(booking => booking.date === dateStr);
+                
+                dayBookings.forEach(booking => {
+                    const bookingEl = document.createElement('div');
+                    bookingEl.className = `booking-item ${booking.status === 'confirmed' ? 'booking-confirmed' : 'booking-cancelled'}`;
+                    bookingEl.textContent = `${booking.time} - ${booking.customerName}`;
+                    bookingEl.onclick = () => showBookingDetails(booking);
+                    dayElement.appendChild(bookingEl);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // Mostrar lista de agendamentos
+        function displayBookingsList(bookings) {
+            const bookingsList = document.getElementById('bookingsList');
+            const noBookings = document.getElementById('noBookings');
+            
+            bookingsList.innerHTML = '';
+            
+            if (bookings.length === 0) {
+                noBookings.classList.remove('hidden');
+                return;
+            }
+            
+            noBookings.classList.add('hidden');
+            
+            bookings.forEach(booking => {
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer';
+                bookingCard.onclick = () => showBookingDetails(booking);
+                
+                const statusColor = booking.status === 'confirmed' ? 'green' : 'red';
+                const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
+                
+                bookingCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${booking.customerName}</h3>
+                            <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
+                            <p class="text-sm text-gray-600">📅 ${formatDate(booking.date)} às ${booking.time}</p>
+                            ${booking.serviceName ? `<p class="text-sm text-gray-600">✂️ ${booking.serviceName} (${booking.serviceDuration}min)</p>` : ''}
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
+                                ${statusText}
+                            </span>
+                            ${booking.servicePrice ? `<p class="text-sm font-medium text-green-600 mt-1">R$ ${booking.servicePrice.toFixed(2)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                bookingsList.appendChild(bookingCard);
+            });
+        }
+
+        // Atualizar estatísticas
+        function updateStatistics() {
+            const today = new Date().toISOString().split('T')[0];
+            const startOfWeek = new Date();
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            
+            const todayBookings = allBookings.filter(b => b.date === today && b.status === 'confirmed');
+            const weekBookings = allBookings.filter(b => {
+                const bookingDate = new Date(b.date);
+                return bookingDate >= startOfWeek && b.status === 'confirmed';
+            });
+            const monthBookings = allBookings.filter(b => {
+                const bookingDate = new Date(b.date);
+                return bookingDate >= startOfMonth && b.status === 'confirmed';
+            });
+            
+            const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.servicePrice || 0), 0);
+            
+            document.getElementById('todayCount').textContent = todayBookings.length;
+            document.getElementById('weekCount').textContent = weekBookings.length;
+            document.getElementById('monthCount').textContent = monthBookings.length;
+            document.getElementById('monthRevenue').textContent = `R$ ${monthRevenue.toFixed(2)}`;
+        }
+
+        // Mudar mês
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar();
+        }
+
+        // Alternar visualização
+        function toggleView() {
+            const calendarView = document.getElementById('calendarView');
+            const listView = document.getElementById('listView');
+            const toggleBtn = document.getElementById('viewToggle');
+            
+            if (currentView === 'calendar') {
+                currentView = 'list';
+                calendarView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                toggleBtn.textContent = '📅 Ver Calendário';
+                displayBookingsList(allBookings);
+            } else {
+                currentView = 'calendar';
+                calendarView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                toggleBtn.textContent = '📋 Ver Lista';
+                generateCalendar();
+            }
+        }
+
+        // Formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Modal de novo agendamento
         function openNewBookingModal() {
             document.getElementById('newBookingModal').classList.remove('hidden');
             document.getElementById('manualDate').min = new Date().toISOString().split('T')[0];
             populateServices();
         }
 
-        // Fechar modal de novo agendamento
         function closeNewBookingModal() {
             document.getElementById('newBookingModal').classList.add('hidden');
             document.getElementById('newBookingForm').reset();
             selectedServiceIndex = null;
         }
 
-        // Preencher dropdown de serviços
         function populateServices() {
             const serviceSelect = document.getElementById('manualService');
             serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
@@ -1215,7 +1218,6 @@
             }
         }
 
-        // Atualizar horários disponíveis baseado na data e serviço selecionados
         async function updateAvailableTimeSlots() {
             const selectedDate = document.getElementById('manualDate').value;
             const selectedServiceIdx = document.getElementById('manualService').value;
@@ -1236,11 +1238,7 @@
             }
             
             try {
-                const response = await fetch(`/api/bookings/${barberSlug}/${selectedDate}`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
+                const response = await fetch(`/api/bookings/${barberSlug}/${selectedDate}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1319,7 +1317,6 @@
             return hours * 60 + minutes;
         }
 
-        // Criar agendamento manual
         async function createManualBooking(event) {
             event.preventDefault();
             
@@ -1344,8 +1341,7 @@
                 const response = await fetch('/api/bookings', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         barberSlug,
