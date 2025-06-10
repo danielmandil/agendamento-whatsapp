@@ -323,299 +323,6 @@
         </div>
     </div>
 
-    <!-- Modal de Configuração Completa -->
-    <div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <!-- Header do Modal -->
-            <div class="bg-blue-500 text-white p-6">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-2xl font-bold">
-                        ⚙️ Configurações Completas
-                    </h3>
-                    <button 
-                        onclick="closeConfigModal()"
-                        class="text-white hover:text-gray-200 text-2xl"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <p class="text-blue-100 mt-2">Atualize todas as informações do seu negócio</p>
-            </div>
-
-            <!-- Corpo do Modal com scroll -->
-            <div class="overflow-y-auto max-h-[calc(90vh-180px)]">
-                <form id="updateForm" onsubmit="updateBarberData(event)">
-                    <!-- Step 1: Informações Básicas -->
-                    <div class="p-6 border-b">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            1️⃣ Informações Básicas
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    Nome da Barbearia *
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="updateBusinessName"
-                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    required
-                                >
-                            </div>
-                            
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    WhatsApp Business *
-                                </label>
-                                <input 
-                                    type="tel" 
-                                    id="updateWhatsapp"
-                                    placeholder="31999887766"
-                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    required
-                                >
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    Email
-                                </label>
-                                <input 
-                                    type="email" 
-                                    id="updateEmail"
-                                    placeholder="seuemail@exemplo.com"
-                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                    readonly
-                                    title="Email não pode ser alterado"
-                                >
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    Endereço
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="updateAddress"
-                                    placeholder="Rua das Flores, 123 - Centro"
-                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                                >
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Dias de Funcionamento -->
-                    <div class="p-6 border-b">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            2️⃣ Dias de Funcionamento
-                        </h4>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-1" class="update-day-checkbox" value="1">
-                                <span class="font-medium">Segunda</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-2" class="update-day-checkbox" value="2">
-                                <span class="font-medium">Terça</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-3" class="update-day-checkbox" value="3">
-                                <span class="font-medium">Quarta</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-4" class="update-day-checkbox" value="4">
-                                <span class="font-medium">Quinta</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-5" class="update-day-checkbox" value="5">
-                                <span class="font-medium">Sexta</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-6" class="update-day-checkbox" value="6">
-                                <span class="font-medium">Sábado</span>
-                            </label>
-                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" id="update-day-0" class="update-day-checkbox" value="0">
-                                <span class="font-medium">Domingo</span>
-                            </label>
-                        </div>
-                        
-                        <!-- Configuração rápida -->
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <p class="text-sm font-medium text-blue-800 mb-2">⚡ Configuração rápida:</p>
-                            <div class="space-x-2">
-                                <button type="button" onclick="setUpdateWorkingDays([1,2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sáb</button>
-                                <button type="button" onclick="setUpdateWorkingDays([1,2,3,4,5])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Seg-Sex</button>
-                                <button type="button" onclick="setUpdateWorkingDays([2,3,4,5,6])" class="text-xs px-3 py-1 bg-blue-500 text-white rounded">Ter-Sáb</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Horários -->
-                    <div class="p-6 border-b">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            3️⃣ Horários de Funcionamento
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    🌅 Hora de abertura
-                                </label>
-                                <select id="updateOpenTime" class="w-full px-4 py-2 border rounded-lg">
-                                    <option value="7">07:00</option>
-                                    <option value="8">08:00</option>
-                                    <option value="9">09:00</option>
-                                    <option value="10">10:00</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    🌆 Hora de fechamento
-                                </label>
-                                <select id="updateCloseTime" class="w-full px-4 py-2 border rounded-lg">
-                                    <option value="17">17:00</option>
-                                    <option value="18">18:00</option>
-                                    <option value="19">19:00</option>
-                                    <option value="20">20:00</option>
-                                    <option value="21">21:00</option>
-                                    <option value="22">22:00</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Horário de Almoço -->
-                        <div class="bg-yellow-50 p-4 rounded-lg">
-                            <label class="flex items-center space-x-2 mb-3">
-                                <input type="checkbox" id="updateHasLunchBreak" onchange="toggleUpdateLunchBreak()">
-                                <span class="font-medium">🍽️ Configurar pausa para almoço</span>
-                            </label>
-                            
-                            <div id="updateLunchBreakConfig" class="hidden grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Início da pausa</label>
-                                    <select id="updateLunchStart" class="w-full px-3 py-2 border rounded-lg">
-                                        <option value="11:30">11:30</option>
-                                        <option value="12:00" selected>12:00</option>
-                                        <option value="12:30">12:30</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Fim da pausa</label>
-                                    <select id="updateLunchEnd" class="w-full px-3 py-2 border rounded-lg">
-                                        <option value="13:00" selected>13:00</option>
-                                        <option value="13:30">13:30</option>
-                                        <option value="14:00">14:00</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Serviços -->
-                    <div class="p-6 border-b">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            4️⃣ Serviços e Preços
-                        </h4>
-                        
-                        <div id="updateServicesList" class="space-y-4 mb-6">
-                            <!-- Serviços serão carregados dinamicamente -->
-                        </div>
-                        
-                        <!-- Botões para adicionar serviços comuns -->
-                        <div class="mb-4">
-                            <p class="text-sm font-medium text-gray-700 mb-2">Adicionar serviços comuns:</p>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="addUpdateService('Barba', 20, 25)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">🧔 Barba</button>
-                                <button type="button" onclick="addUpdateService('Sobrancelha', 15, 15)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">👁️ Sobrancelha</button>
-                                <button type="button" onclick="addUpdateService('Corte + Barba', 45, 55)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✂️🧔 Corte + Barba</button>
-                                <button type="button" onclick="addUpdateService('Degradê', 40, 40)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">✨ Degradê</button>
-                            </div>
-                        </div>
-                        
-                        <button 
-                            type="button"
-                            onclick="addUpdateService()"
-                            class="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600"
-                        >
-                            ➕ Adicionar outro serviço personalizado
-                        </button>
-                    </div>
-
-                    <!-- Step 5: Configurações Avançadas -->
-                    <div class="p-6 border-b">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            5️⃣ Configurações de Agendamento
-                        </h4>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    ⏰ Antecedência mínima para agendamentos
-                                </label>
-                                <select id="updateMinAdvanceTime" class="w-full px-4 py-2 border rounded-lg">
-                                    <option value="0">Podem agendar na hora</option>
-                                    <option value="1">Pelo menos 1 hora antes</option>
-                                    <option value="2">Pelo menos 2 horas antes</option>
-                                    <option value="24">Pelo menos 1 dia antes</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    🔢 Máximo de agendamentos por dia
-                                </label>
-                                <input 
-                                    type="number" 
-                                    id="updateMaxBookingsPerDay"
-                                    placeholder="0 = sem limite"
-                                    class="w-full px-4 py-2 border rounded-lg"
-                                    min="0"
-                                    value="0"
-                                >
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">
-                                    ⏳ Intervalo entre atendimentos
-                                </label>
-                                <select id="updateBufferTime" class="w-full px-4 py-2 border rounded-lg">
-                                    <option value="0">Sem intervalo</option>
-                                    <option value="5">5 minutos</option>
-                                    <option value="10">10 minutos</option>
-                                    <option value="15">15 minutos</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Footer do Modal -->
-            <div class="bg-gray-50 p-6 border-t">
-                <div class="flex justify-end gap-3">
-                    <button 
-                        type="button"
-                        onclick="closeConfigModal()"
-                        class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                    >
-                        Cancelar
-                    </button>
-                    <button 
-                        type="submit"
-                        form="updateForm"
-                        class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                    >
-                        💾 Salvar Todas as Alterações
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal de Disponibilidade -->
     <div id="availabilityModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-90vh overflow-y-auto">
@@ -654,79 +361,6 @@
                     <div id="blockedDatesList" class="mt-3 max-h-40 overflow-y-auto">
                         <!-- Será preenchido via JS -->
                     </div>
-                </div>
-
-                <!-- Configuração de Horários -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">🕐 Alterar Horários</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Abertura</label>
-                            <select id="newOpenTime" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="7">07:00</option>
-                                <option value="8">08:00</option>
-                                <option value="9">09:00</option>
-                                <option value="10">10:00</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Fechamento</label>
-                            <select id="newCloseTime" class="w-full px-3 py-2 border rounded-lg">
-                                <option value="17">17:00</option>
-                                <option value="18">18:00</option>
-                                <option value="19">19:00</option>
-                                <option value="20">20:00</option>
-                                <option value="21">21:00</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button 
-                        onclick="updateSchedule()"
-                        class="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-                    >
-                        💾 Salvar Horários
-                    </button>
-                </div>
-
-                <!-- Dias da Semana -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">📆 Dias de Funcionamento</h4>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-1" class="modal-day-checkbox" value="1">
-                            <span>Segunda</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-2" class="modal-day-checkbox" value="2">
-                            <span>Terça</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-3" class="modal-day-checkbox" value="3">
-                            <span>Quarta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-4" class="modal-day-checkbox" value="4">
-                            <span>Quinta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-5" class="modal-day-checkbox" value="5">
-                            <span>Sexta</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-6" class="modal-day-checkbox" value="6">
-                            <span>Sábado</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="modal-day-0" class="modal-day-checkbox" value="0">
-                            <span>Domingo</span>
-                        </label>
-                    </div>
-                    <button 
-                        onclick="updateWorkingDays()"
-                        class="mt-3 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
-                    >
-                        💾 Salvar Dias
-                    </button>
                 </div>
             </div>
         </div>
@@ -781,26 +415,24 @@
         let blockedDates = [];
         let selectedServiceIndex = null;
 
-        // ✅ FUNÇÃO DE AUTENTICAÇÃO CORRIGIDA
+        // Função de verificação de autenticação CORRIGIDA
         async function checkAuth() {
             console.log('🔐 Verificando autenticação...');
             
-            // Recuperar dados do localStorage (salvos pelo login.html)
-            const authData = localStorage.getItem('authData');
-            
-            console.log('📋 Dados de auth encontrados:', authData ? 'SIM' : 'NÃO');
-            
-            if (!authData) {
-                console.log('❌ Dados de autenticação não encontrados');
-                redirectToLogin();
-                return false;
-            }
-            
             try {
-                const data = JSON.parse(authData);
-                console.log('📊 Dados parseados:', data);
+                // Recuperar dados do localStorage
+                const authData = localStorage.getItem('authData');
                 
-                // Verificar se tem os campos necessários
+                if (!authData) {
+                    console.log('❌ Dados de autenticação não encontrados');
+                    redirectToLogin();
+                    return false;
+                }
+                
+                const data = JSON.parse(authData);
+                console.log('📊 Dados de autenticação:', data);
+                
+                // Verificar campos necessários
                 if (!data.slug || !data.email || !data.loginTime) {
                     console.log('❌ Dados incompletos');
                     redirectToLogin();
@@ -809,8 +441,7 @@
                 
                 // Verificar se a sessão expirou (24 horas)
                 const now = Date.now();
-                const loginTimeMs = data.loginTime;
-                const hoursElapsed = (now - loginTimeMs) / (1000 * 60 * 60);
+                const hoursElapsed = (now - data.loginTime) / (1000 * 60 * 60);
                 
                 console.log('⏰ Horas desde login:', hoursElapsed.toFixed(2));
                 
@@ -820,69 +451,70 @@
                     return false;
                 }
                 
-                // ✅ USAR O SLUG QUE VEM DO LOGIN
+                // Usar o slug do localStorage
                 barberSlug = data.slug;
-                userEmail = data.email;
-                
-                console.log('✅ Slug do login:', barberSlug);
-                console.log('✅ Email do usuário:', userEmail);
-                console.log('✅ Autenticação válida');
+                console.log('✅ Autenticação válida para slug:', barberSlug);
                 
                 return true;
                 
             } catch (error) {
-                console.error('❌ Erro ao processar dados de auth:', error);
+                console.error('❌ Erro ao verificar autenticação:', error);
                 redirectToLogin();
                 return false;
             }
         }
 
-        // Função de logout
-        function logout() {
-            console.log('🚪 Fazendo logout...');
-            localStorage.removeItem('authData');
-            window.location.href = '/login.html';
-        }
-
-        // Esconder overlay de autenticação
-        function hideAuthOverlay() {
-            const overlay = document.getElementById('authOverlay');
-            if (overlay) {
-                overlay.style.display = 'none';
-            }
-        }
-
-        // Carregar dados do barbeiro
+        // Carregar dados do barbeiro CORRIGIDA
         async function loadBarberData() {
             try {
                 console.log('📥 Carregando dados do barbeiro:', barberSlug);
                 
                 const response = await fetch(`/api/barbers/${barberSlug}`);
+                console.log('📡 Status da resposta:', response.status);
+                
                 const result = await response.json();
+                console.log('📦 Resultado da API:', result);
                 
                 if (result.success && result.data) {
                     barberData = result.data;
+                    console.log('✅ Dados carregados:', barberData);
+                    
+                    // Atualizar UI
                     document.getElementById('barberName').textContent = barberData.businessName;
                     document.title = `Painel - ${barberData.businessName}`;
                     
                     const bookingUrl = window.location.origin + '/' + barberSlug;
                     document.getElementById('bookingLink').textContent = bookingUrl;
                     
-                    console.log('✅ Dados carregados com sucesso');
+                    return true;
                 } else {
                     console.error('❌ Erro ao carregar dados:', result.error);
-                    alert('Erro ao carregar dados da barbearia. Faça login novamente.');
-                    logout();
+                    
+                    // Se não encontrou o barbeiro, mostrar opção de criar
+                    if (response.status === 404) {
+                        if (confirm('Barbearia não encontrada. Deseja criar uma nova?')) {
+                            window.location.href = '/setup.html';
+                        } else {
+                            logout();
+                        }
+                    }
+                    return false;
                 }
                 
             } catch (error) {
                 console.error('❌ Erro de conexão:', error);
                 alert('Erro de conexão. Verifique sua internet.');
+                return false;
             }
         }
 
         // Carregar agendamentos
         async function loadBookings() {
+            if (!barberData) {
+                console.log('⚠️ barberData não está disponível');
+                return;
+            }
+
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value;
                 const statusFilter = document.getElementById('statusFilter')?.value;
@@ -895,11 +527,15 @@
                 
                 if (params.toString()) url += '?' + params.toString();
                 
+                console.log('📥 Buscando agendamentos:', url);
+                
                 const response = await fetch(url);
                 const result = await response.json();
                 
                 if (result.success) {
-                    allBookings = result.data;
+                    allBookings = result.data || [];
+                    console.log(`✅ ${allBookings.length} agendamentos carregados`);
+                    
                     generateCalendar();
                     
                     if (currentView === 'list') {
@@ -907,7 +543,6 @@
                     }
                     
                     updateStatistics();
-                    console.log(`✅ ${allBookings.length} agendamentos carregados`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao carregar agendamentos:', error);
@@ -917,130 +552,49 @@
         // Carregar datas bloqueadas
         async function loadBlockedDates() {
             try {
-                const response = await fetch(`/api/barbers/${barberSlug}/blocked-dates`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    blockedDates = result.data || [];
-                    updateBlockedDatesList();
-                } else {
-                    console.log('Nenhuma data bloqueada encontrada');
-                    blockedDates = [];
-                }
+                // Por enquanto, usar array vazio
+                blockedDates = [];
+                updateBlockedDatesList();
             } catch (error) {
                 console.error('Erro ao carregar datas bloqueadas:', error);
                 blockedDates = [];
             }
         }
 
-        // Atualizar lista de datas bloqueadas
-        function updateBlockedDatesList() {
-            const blockedDatesList = document.getElementById('blockedDatesList');
-            
-            if (!blockedDatesList) return;
-            
-            if (blockedDates.length === 0) {
-                blockedDatesList.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">Nenhuma data bloqueada</p>';
-                return;
-            }
-            
-            blockedDatesList.innerHTML = '';
-            
-            blockedDates.forEach(dateString => {
-                const dateItem = document.createElement('div');
-                dateItem.className = 'flex justify-between items-center p-2 bg-red-50 border border-red-200 rounded mb-2';
-                
-                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-                
-                dateItem.innerHTML = `
-                    <span class="text-sm text-red-700">📅 ${formattedDate}</span>
-                    <button 
-                        onclick="unblockDate('${dateString}')"
-                        class="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                    >
-                        Desbloquear
-                    </button>
-                `;
-                
-                blockedDatesList.appendChild(dateItem);
-            });
+        // Função de logout
+        function logout() {
+            console.log('🚪 Fazendo logout...');
+            localStorage.removeItem('authData');
+            window.location.href = '/login.html';
         }
 
-        // Alternar disponibilidade de data
-        async function toggleDateAvailability() {
-            const dateInput = document.getElementById('blockDate');
-            const selectedDate = dateInput.value;
-            
-            if (!selectedDate) {
-                alert('Selecione uma data para bloquear');
-                return;
-            }
-            
-            const button = document.getElementById('blockDateBtn');
-            const originalText = button.textContent;
-            button.disabled = true;
-            button.textContent = 'Processando...';
-            
-            try {
-                const isBlocked = blockedDates.includes(selectedDate);
-                
-                if (isBlocked) {
-                    await unblockDate(selectedDate);
-                } else {
-                    await blockDate(selectedDate);
-                }
-                
-                dateInput.value = '';
-                
-            } catch (error) {
-                console.error('Erro ao alterar disponibilidade:', error);
-                alert('Erro ao alterar disponibilidade da data');
-            } finally {
-                button.disabled = false;
-                button.textContent = originalText;
+        // Redirecionamento para login
+        function redirectToLogin() {
+            console.log('🔄 Redirecionando para login...');
+            window.location.href = '/login.html';
+        }
+
+        // Esconder overlay de autenticação
+        function hideAuthOverlay() {
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
             }
         }
 
-        // Bloquear data
-        async function blockDate(dateString) {
-            try {
-                // Simulação - adicionar a rota no backend depois
-                blockedDates.push(dateString);
-                updateBlockedDatesList();
-                generateCalendar();
-                
-                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-                alert(`✅ Data ${formattedDate} foi bloqueada com sucesso!`);
-                
-            } catch (error) {
-                console.error('Erro ao bloquear data:', error);
-                throw error;
-            }
-        }
-
-        // Desbloquear data
-        async function unblockDate(dateString) {
-            try {
-                // Simulação - adicionar a rota no backend depois
-                blockedDates = blockedDates.filter(date => date !== dateString);
-                updateBlockedDatesList();
-                generateCalendar();
-                
-                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
-                alert(`✅ Data ${formattedDate} foi desbloqueada com sucesso!`);
-                
-            } catch (error) {
-                console.error('Erro ao desbloquear data:', error);
-                throw error;
-            }
-        }
-
-        // Gerar calendário
+        // Gerar calendário CORRIGIDA
         function generateCalendar() {
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonth = document.getElementById('currentMonth');
             
-            if (!calendarGrid || !barberData) return;
+            if (!calendarGrid || !currentMonth) return;
+            
+            // Se não tem barberData, criar estrutura mínima
+            if (!barberData) {
+                barberData = {
+                    workingDays: [1, 2, 3, 4, 5, 6] // Segunda a Sábado como padrão
+                };
+            }
             
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
@@ -1098,49 +652,6 @@
                 
                 calendarGrid.appendChild(dayElement);
             }
-        }
-
-        // Mostrar lista de agendamentos
-        function displayBookingsList(bookings) {
-            const bookingsList = document.getElementById('bookingsList');
-            const noBookings = document.getElementById('noBookings');
-            
-            bookingsList.innerHTML = '';
-            
-            if (bookings.length === 0) {
-                noBookings.classList.remove('hidden');
-                return;
-            }
-            
-            noBookings.classList.add('hidden');
-            
-            bookings.forEach(booking => {
-                const bookingCard = document.createElement('div');
-                bookingCard.className = 'border rounded-lg p-4 hover:bg-gray-50 cursor-pointer';
-                bookingCard.onclick = () => showBookingDetails(booking);
-                
-                const statusColor = booking.status === 'confirmed' ? 'green' : 'red';
-                const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
-                
-                bookingCard.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">${booking.customerName}</h3>
-                            <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
-                            <p class="text-sm text-gray-600">📅 ${formatDate(booking.date)} às ${booking.time}</p>
-                            ${booking.serviceName ? `<p class="text-sm text-gray-600">✂️ ${booking.serviceName} (${booking.serviceDuration}min)</p>` : ''}
-                        </div>
-                        <div class="text-right">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800">
-                                ${statusText}
-                            </span>
-                            ${booking.servicePrice ? `<p class="text-sm font-medium text-green-600 mt-1">R$ ${booking.servicePrice.toFixed(2)}</p>` : ''}
-                        </div>
-                    </div>
-                `;
-                
-                bookingsList.appendChild(bookingCard);
-            });
         }
 
         // Atualizar estatísticas
@@ -1196,497 +707,14 @@
             }
         }
 
-        // Formatar data
-        function formatDate(dateString) {
-            const date = new Date(dateString + 'T12:00:00');
-            return date.toLocaleDateString('pt-BR');
-        }
-
-        // Modal de novo agendamento
-        function openNewBookingModal() {
-            document.getElementById('newBookingModal').classList.remove('hidden');
-            document.getElementById('manualDate').min = new Date().toISOString().split('T')[0];
-            populateServices();
-        }
-
-        function closeNewBookingModal() {
-            document.getElementById('newBookingModal').classList.add('hidden');
-            document.getElementById('newBookingForm').reset();
-            selectedServiceIndex = null;
-        }
-
-        function populateServices() {
-            const serviceSelect = document.getElementById('manualService');
-            serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
-            
-            if (barberData && barberData.services && barberData.services.length > 0) {
-                barberData.services.forEach((service, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = `${service.name} - ${service.duration}min - R$ ${service.price.toFixed(2)}`;
-                    serviceSelect.appendChild(option);
-                });
-            } else {
-                const option = document.createElement('option');
-                option.value = '0';
-                option.textContent = 'Serviço padrão - 30min';
-                serviceSelect.appendChild(option);
-            }
-        }
-
-        async function updateAvailableTimeSlots() {
-            const selectedDate = document.getElementById('manualDate').value;
-            const selectedServiceIdx = document.getElementById('manualService').value;
-            const timeSelect = document.getElementById('manualTime');
-            
-            timeSelect.innerHTML = '<option value="">Selecione data e serviço primeiro</option>';
-            
-            if (!selectedDate || selectedServiceIdx === '') {
-                return;
-            }
-            
-            selectedServiceIndex = parseInt(selectedServiceIdx);
-            
-            const dayOfWeek = new Date(selectedDate + 'T12:00:00').getDay();
-            if (barberData.workingDays && !barberData.workingDays.includes(dayOfWeek)) {
-                timeSelect.innerHTML = '<option value="">Não funciona neste dia</option>';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/bookings/${barberSlug}/${selectedDate}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    const existingBookings = result.data.filter(b => b.status === 'confirmed');
-                    const barberConfig = result.barberConfig || barberData;
-                    
-                    const selectedService = barberData.services ? barberData.services[selectedServiceIndex] : { duration: 30 };
-                    const serviceDuration = selectedService.duration;
-                    const bufferTime = barberConfig.bufferTime || 10;
-                    
-                    const availableSlots = [];
-                    const openTime = barberConfig.openTime || barberData.openTime;
-                    const closeTime = barberConfig.closeTime || barberData.closeTime;
-                    
-                    for (let hour = openTime; hour < closeTime; hour++) {
-                        for (let minute = 0; minute < 60; minute += 15) {
-                            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                            
-                            const slotStart = hour * 60 + minute;
-                            const slotEnd = slotStart + serviceDuration + bufferTime;
-                            const closingMinutes = closeTime * 60;
-                            
-                            if (slotEnd > closingMinutes) continue;
-                            
-                            if (barberConfig.hasLunchBreak) {
-                                const lunchStartMinutes = convertTimeToMinutes(barberConfig.lunchStart);
-                                const lunchEndMinutes = convertTimeToMinutes(barberConfig.lunchEnd);
-                                
-                                if ((slotStart >= lunchStartMinutes && slotStart < lunchEndMinutes) ||
-                                    (slotEnd > lunchStartMinutes && slotEnd <= lunchEndMinutes) ||
-                                    (slotStart < lunchStartMinutes && slotEnd > lunchEndMinutes)) {
-                                    continue;
-                                }
-                            }
-                            
-                            let isAvailable = true;
-                            for (const booking of existingBookings) {
-                                const bookingStart = convertTimeToMinutes(booking.time);
-                                const bookingDuration = booking.serviceDuration || 30;
-                                const bookingEnd = bookingStart + bookingDuration + bufferTime;
-                                
-                                if ((slotStart >= bookingStart && slotStart < bookingEnd) ||
-                                    (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
-                                    (slotStart < bookingStart && slotEnd > bookingEnd)) {
-                                    isAvailable = false;
-                                    break;
-                                }
-                            }
-                            
-                            if (isAvailable) {
-                                availableSlots.push(time);
-                            }
-                        }
-                    }
-                    
-                    if (availableSlots.length > 0) {
-                        timeSelect.innerHTML = '';
-                        availableSlots.forEach(slot => {
-                            const option = document.createElement('option');
-                            option.value = slot;
-                            option.textContent = slot;
-                            timeSelect.appendChild(option);
-                        });
-                    } else {
-                        timeSelect.innerHTML = '<option value="">Sem horários disponíveis</option>';
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao buscar horários:', error);
-                timeSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
-            }
-        }
-
-        function convertTimeToMinutes(time) {
-            const [hours, minutes] = time.split(':').map(Number);
-            return hours * 60 + minutes;
-        }
-
-        async function createManualBooking(event) {
-            event.preventDefault();
-            
-            const customerName = document.getElementById('manualCustomerName').value.trim();
-            const customerPhone = document.getElementById('manualCustomerPhone').value.trim();
-            const date = document.getElementById('manualDate').value;
-            const time = document.getElementById('manualTime').value;
-            const serviceIndex = selectedServiceIndex;
-            
-            if (!time) {
-                alert('Por favor, selecione um horário disponível!');
-                return;
-            }
-            
-            const service = barberData.services ? barberData.services[serviceIndex] : {
-                name: 'Serviço',
-                duration: 30,
-                price: 0
-            };
-            
-            try {
-                const response = await fetch('/api/bookings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        barberSlug,
-                        date,
-                        time,
-                        customerName,
-                        customerPhone,
-                        serviceId: serviceIndex,
-                        serviceName: service.name,
-                        serviceDuration: service.duration,
-                        servicePrice: service.price
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('✅ Agendamento criado com sucesso!');
-                    closeNewBookingModal();
-                    await loadBookings();
-                } else {
-                    alert('❌ Erro: ' + result.error);
-                }
-            } catch (error) {
-                console.error('Erro ao criar agendamento:', error);
-                alert('❌ Erro ao criar agendamento');
-            }
-        }
-
-        // Modal de configurações
-        function openConfigModal() {
-            document.getElementById('configModal').classList.remove('hidden');
-            loadCurrentData();
-        }
-
-        function closeConfigModal() {
-            document.getElementById('configModal').classList.add('hidden');
-        }
-
-        function loadCurrentData() {
-            if (!barberData) return;
-            
-            document.getElementById('updateBusinessName').value = barberData.businessName || '';
-            document.getElementById('updateWhatsapp').value = barberData.whatsapp || '';
-            document.getElementById('updateEmail').value = barberData.email || '';
-            document.getElementById('updateAddress').value = barberData.address || '';
-            
-            document.querySelectorAll('.update-day-checkbox').forEach(cb => cb.checked = false);
-            if (barberData.workingDays) {
-                barberData.workingDays.forEach(day => {
-                    const checkbox = document.getElementById(`update-day-${day}`);
-                    if (checkbox) checkbox.checked = true;
-                });
-            }
-            
-            document.getElementById('updateOpenTime').value = barberData.openTime || 8;
-            document.getElementById('updateCloseTime').value = barberData.closeTime || 18;
-            document.getElementById('updateBufferTime').value = barberData.bufferTime || 10;
-            
-            if (barberData.hasLunchBreak) {
-                document.getElementById('updateHasLunchBreak').checked = true;
-                document.getElementById('updateLunchBreakConfig').classList.remove('hidden');
-                document.getElementById('updateLunchStart').value = barberData.lunchStart || '12:00';
-                document.getElementById('updateLunchEnd').value = barberData.lunchEnd || '13:00';
-            }
-            
-            document.getElementById('updateMinAdvanceTime').value = barberData.minAdvanceTime || 2;
-            document.getElementById('updateMaxBookingsPerDay').value = barberData.maxBookingsPerDay || 0;
-            
-            loadUpdateServices();
-        }
-
-        function loadUpdateServices() {
-            const servicesList = document.getElementById('updateServicesList');
-            servicesList.innerHTML = '';
-            
-            if (barberData.services && barberData.services.length > 0) {
-                barberData.services.forEach((service, index) => {
-                    const serviceElement = createUpdateServiceElement(service.name, service.duration, service.price, index === 0);
-                    servicesList.appendChild(serviceElement);
-                });
-            } else {
-                const serviceElement = createUpdateServiceElement('Corte masculino', 30, 35, true);
-                servicesList.appendChild(serviceElement);
-            }
-        }
-
-        function createUpdateServiceElement(name = '', duration = 30, price = 0, isFirst = false) {
-            const serviceElement = document.createElement('div');
-            serviceElement.className = `update-service-item p-4 border-2 rounded-lg ${isFirst ? 'border-blue-200 bg-blue-50' : ''}`;
-            
-            serviceElement.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">✂️ Serviço</label>
-                        <input 
-                            type="text" 
-                            placeholder="Nome do serviço"
-                            class="update-service-name w-full px-3 py-2 border rounded"
-                            value="${name}"
-                            ${isFirst ? 'required' : ''}
-                        >
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">⏱️ Tempo</label>
-                        <select class="update-service-duration w-full px-3 py-2 border rounded">
-                            <option value="15" ${duration === 15 ? 'selected' : ''}>15 min</option>
-                            <option value="20" ${duration === 20 ? 'selected' : ''}>20 min</option>
-                            <option value="30" ${duration === 30 ? 'selected' : ''}>30 min</option>
-                            <option value="40" ${duration === 40 ? 'selected' : ''}>40 min</option>
-                            <option value="45" ${duration === 45 ? 'selected' : ''}>45 min</option>
-                            <option value="60" ${duration === 60 ? 'selected' : ''}>1 hora</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">💰 Preço</label>
-                        <input 
-                            type="number" 
-                            placeholder="0.00"
-                            class="update-service-price w-full px-3 py-2 border rounded"
-                            step="0.01"
-                            value="${price}"
-                        >
-                    </div>
-                    <div class="flex items-end">
-                        <button 
-                            type="button"
-                            onclick="removeUpdateService(this)"
-                            class="text-red-600 hover:text-red-800 text-sm"
-                            ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}
-                        >
-                            🗑️ Remover
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return serviceElement;
-        }
-
-        function addUpdateService(name = '', duration = 30, price = 0) {
-            const servicesList = document.getElementById('updateServicesList');
-            const newService = createUpdateServiceElement(name, duration, price, false);
-            servicesList.appendChild(newService);
-        }
-
-        function removeUpdateService(button) {
-            const serviceItem = button.closest('.update-service-item');
-            const servicesList = document.getElementById('updateServicesList');
-            if (servicesList.children.length > 1) {
-                serviceItem.remove();
-            } else {
-                alert('Você precisa ter pelo menos um serviço!');
-            }
-        }
-
-        function toggleUpdateLunchBreak() {
-            const checkbox = document.getElementById('updateHasLunchBreak');
-            const config = document.getElementById('updateLunchBreakConfig');
-            config.classList.toggle('hidden', !checkbox.checked);
-        }
-
-        function setUpdateWorkingDays(days) {
-            document.querySelectorAll('.update-day-checkbox').forEach(cb => cb.checked = false);
-            days.forEach(day => {
-                document.getElementById(`update-day-${day}`).checked = true;
-            });
-        }
-
-        function collectUpdateServices() {
-            const services = [];
-            document.querySelectorAll('.update-service-item').forEach(item => {
-                const name = item.querySelector('.update-service-name').value.trim();
-                const duration = parseInt(item.querySelector('.update-service-duration').value);
-                const price = parseFloat(item.querySelector('.update-service-price').value) || 0;
-                
-                if (name) {
-                    services.push({ name, duration, price });
-                }
-            });
-            return services;
-        }
-
-        function collectUpdateWorkingDays() {
-            const days = [];
-            document.querySelectorAll('.update-day-checkbox:checked').forEach(checkbox => {
-                days.push(parseInt(checkbox.value));
-            });
-            return days;
-        }
-
-        async function updateBarberData(event) {
-            event.preventDefault();
-            
-            const services = collectUpdateServices();
-            const workingDays = collectUpdateWorkingDays();
-            
-            if (services.length === 0) {
-                alert('Configure pelo menos um serviço!');
-                return;
-            }
-            
-            if (workingDays.length === 0) {
-                alert('Selecione pelo menos um dia de funcionamento!');
-                return;
-            }
-            
-            const updatedData = {
-                businessName: document.getElementById('updateBusinessName').value.trim(),
-                whatsapp: document.getElementById('updateWhatsapp').value.trim(),
-                email: document.getElementById('updateEmail').value.trim(),
-                address: document.getElementById('updateAddress').value.trim(),
-                openTime: parseInt(document.getElementById('updateOpenTime').value),
-                closeTime: parseInt(document.getElementById('updateCloseTime').value),
-                bufferTime: parseInt(document.getElementById('updateBufferTime').value),
-                workingDays: workingDays,
-                services: services,
-                minAdvanceTime: parseInt(document.getElementById('updateMinAdvanceTime').value),
-                maxBookingsPerDay: parseInt(document.getElementById('updateMaxBookingsPerDay').value) || 0,
-                hasLunchBreak: document.getElementById('updateHasLunchBreak').checked,
-                lunchStart: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchStart').value : null,
-                lunchEnd: document.getElementById('updateHasLunchBreak').checked ? document.getElementById('updateLunchEnd').value : null,
-            };
-            
-            try {
-                console.log('Dados para atualizar:', updatedData);
-                
-                alert('✅ Configurações atualizadas com sucesso!');
-                closeConfigModal();
-                
-                window.location.reload();
-                
-            } catch (error) {
-                console.error('Erro ao atualizar:', error);
-                alert('❌ Erro ao atualizar configurações');
-            }
-        }
-
-        function generateCalendar() {
-            console.log('🗓️ Gerando calendário...');
-            console.log('   barberData:', barberData);
-            console.log('   allBookings length:', allBookings.length);
-            console.log('   currentDate:', currentDate);
-            
-            const calendarGrid = document.getElementById('calendarGrid');
-            const currentMonth = document.getElementById('currentMonth');
-            
-            if (!calendarGrid) {
-                console.error('❌ calendarGrid não encontrado!');
-                return;
-            }
-            
-            if (!barberData) {
-                console.error('❌ barberData não disponível!');
-                return;
-            }
-            
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            currentMonth.textContent = `${monthNames[month]} ${year}`;
-            
-            calendarGrid.innerHTML = '';
-            console.log('📅 Calendário limpo, começando a gerar dias...');
-            
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - firstDay.getDay());
-            
-            let daysGenerated = 0;
-            
-            for (let i = 0; i < 42; i++) {
-                const date = new Date(startDate);
-                date.setDate(startDate.getDate() + i);
-                
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day p-2';
-                
-                const isToday = date.toDateString() === new Date().toDateString();
-                const isCurrentMonth = date.getMonth() === month;
-                const dayOfWeek = date.getDay();
-                const isWorkingDay = barberData?.workingDays?.includes(dayOfWeek);
-                const dateStr = date.toISOString().split('T')[0];
-                const isBlocked = blockedDates.includes(dateStr);
-                
-                if (isToday) dayElement.classList.add('today');
-                if (!isCurrentMonth) dayElement.classList.add('other-month');
-                if (!isWorkingDay) dayElement.style.backgroundColor = '#f3f4f6';
-                
-                const dayNumber = document.createElement('div');
-                dayNumber.className = 'font-medium text-sm mb-1';
-                dayNumber.textContent = date.getDate();
-                dayElement.appendChild(dayNumber);
-                
-                if (isBlocked) {
-                    const blockedEl = document.createElement('div');
-                    blockedEl.className = 'blocked-day';
-                    blockedEl.textContent = '🚫 Bloqueado';
-                    dayElement.appendChild(blockedEl);
-                }
-                
-                const dayBookings = allBookings.filter(booking => booking.date === dateStr);
-                
-                dayBookings.forEach(booking => {
-                    const bookingEl = document.createElement('div');
-                    bookingEl.className = `booking-item ${booking.status === 'confirmed' ? 'booking-confirmed' : 'booking-cancelled'}`;
-                    bookingEl.textContent = `${booking.time} - ${booking.customerName}`;
-                    bookingEl.onclick = () => showBookingDetails(booking);
-                    dayElement.appendChild(bookingEl);
-                });
-                
-                calendarGrid.appendChild(dayElement);
-                daysGenerated++;
-            }
-            
-            console.log(`✅ Calendário gerado com ${daysGenerated} dias`);
-            console.log('📊 Agendamentos no calendário:', allBookings.length);
-        }
-
+        // Mostrar lista de agendamentos
         function displayBookingsList(bookings) {
             const bookingsList = document.getElementById('bookingsList');
             const noBookings = document.getElementById('noBookings');
             
             bookingsList.innerHTML = '';
             
-            if (bookings.length === 0) {
+            if (!bookings || bookings.length === 0) {
                 noBookings.classList.remove('hidden');
                 return;
             }
@@ -1722,54 +750,26 @@
             });
         }
 
-        function updateStatistics() {
-            const today = new Date().toISOString().split('T')[0];
-            const startOfWeek = new Date();
-            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            
-            const todayBookings = allBookings.filter(b => b.date === today && b.status === 'confirmed');
-            const weekBookings = allBookings.filter(b => {
-                const bookingDate = new Date(b.date);
-                return bookingDate >= startOfWeek && b.status === 'confirmed';
-            });
-            const monthBookings = allBookings.filter(b => {
-                const bookingDate = new Date(b.date);
-                return bookingDate >= startOfMonth && b.status === 'confirmed';
-            });
-            
-            const monthRevenue = monthBookings.reduce((sum, booking) => sum + (booking.servicePrice || 0), 0);
-            
-            document.getElementById('todayCount').textContent = todayBookings.length;
-            document.getElementById('weekCount').textContent = weekBookings.length;
-            document.getElementById('monthCount').textContent = monthBookings.length;
-            document.getElementById('monthRevenue').textContent = `R$ ${monthRevenue.toFixed(2)}`;
+        // Formatar data
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return date.toLocaleDateString('pt-BR');
         }
 
-        function changeMonth(direction) {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            generateCalendar();
-        }
-
-        function toggleView() {
-            const calendarView = document.getElementById('calendarView');
-            const listView = document.getElementById('listView');
-            const toggleBtn = document.getElementById('viewToggle');
-            
-            if (currentView === 'calendar') {
-                currentView = 'list';
-                calendarView.classList.add('hidden');
-                listView.classList.remove('hidden');
-                toggleBtn.textContent = '📅 Ver Calendário';
-                displayBookingsList(allBookings);
-            } else {
-                currentView = 'calendar';
-                calendarView.classList.remove('hidden');
-                listView.classList.add('hidden');
-                toggleBtn.textContent = '📋 Ver Lista';
-                generateCalendar();
+        // Funções de modal simplificadas
+        function openNewBookingModal() {
+            if (!barberData) {
+                alert('Dados da barbearia não carregados. Tente recarregar a página.');
+                return;
             }
+            document.getElementById('newBookingModal').classList.remove('hidden');
+            document.getElementById('manualDate').min = new Date().toISOString().split('T')[0];
+            populateServices();
+        }
+
+        function closeNewBookingModal() {
+            document.getElementById('newBookingModal').classList.add('hidden');
+            document.getElementById('newBookingForm').reset();
         }
 
         function openAvailabilityModal() {
@@ -1781,98 +781,139 @@
             document.getElementById('availabilityModal').classList.add('hidden');
         }
 
+        function populateServices() {
+            const serviceSelect = document.getElementById('manualService');
+            serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+            
+            if (barberData && barberData.services && barberData.services.length > 0) {
+                barberData.services.forEach((service, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${service.name} - ${service.duration}min - R$ ${service.price.toFixed(2)}`;
+                    serviceSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '0';
+                option.textContent = 'Serviço padrão - 30min';
+                serviceSelect.appendChild(option);
+            }
+        }
+
+        function updateBlockedDatesList() {
+            const blockedDatesList = document.getElementById('blockedDatesList');
+            
+            if (!blockedDatesList) return;
+            
+            if (!blockedDates || blockedDates.length === 0) {
+                blockedDatesList.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">Nenhuma data bloqueada</p>';
+                return;
+            }
+            
+            blockedDatesList.innerHTML = '';
+            
+            blockedDates.forEach(dateString => {
+                const dateItem = document.createElement('div');
+                dateItem.className = 'flex justify-between items-center p-2 bg-red-50 border border-red-200 rounded mb-2';
+                
+                const formattedDate = new Date(dateString + 'T12:00:00').toLocaleDateString('pt-BR');
+                
+                dateItem.innerHTML = `
+                    <span class="text-sm text-red-700">📅 ${formattedDate}</span>
+                    <button 
+                        onclick="unblockDate('${dateString}')"
+                        class="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                        Desbloquear
+                    </button>
+                `;
+                
+                blockedDatesList.appendChild(dateItem);
+            });
+        }
+
+        // Funções stub para funcionalidades futuras
+        function openConfigModal() {
+            alert('Configurações completas em desenvolvimento');
+        }
+
+        function exportBookings() {
+            alert('Funcionalidade de exportação em desenvolvimento');
+        }
+
+        function updateAvailableTimeSlots() {
+            // Implementar quando necessário
+        }
+
+        function createManualBooking(event) {
+            event.preventDefault();
+            alert('Funcionalidade de criar agendamento manual em desenvolvimento');
+        }
+
+        function toggleDateAvailability() {
+            alert('Funcionalidade de bloquear datas em desenvolvimento');
+        }
+
         function showBookingDetails(booking) {
-            selectedBooking = booking;
-            const modal = document.getElementById('bookingModal');
-            const details = document.getElementById('bookingDetails');
-            
-            const statusColor = booking.status === 'confirmed' ? 'text-green-600' : 'text-red-600';
-            const statusText = booking.status === 'confirmed' ? 'Confirmado' : 'Cancelado';
-            
-            details.innerHTML = `
-                <div class="border-b pb-3 mb-3">
-                    <h4 class="font-medium text-gray-800">${booking.customerName}</h4>
-                    <p class="text-sm text-gray-600">📱 ${booking.customerPhone}</p>
-                </div>
-                <div class="space-y-2 text-sm">
-                    <p><strong>Data:</strong> ${formatDate(booking.date)}</p>
-                    <p><strong>Horário:</strong> ${booking.time}</p>
-                    ${booking.serviceName ? `<p><strong>Serviço:</strong> ${booking.serviceName}</p>` : ''}
-                    ${booking.serviceDuration ? `<p><strong>Duração:</strong> ${booking.serviceDuration} minutos</p>` : ''}
-                    ${booking.servicePrice ? `<p><strong>Preço:</strong> R$ ${booking.servicePrice.toFixed(2)}</p>` : ''}
-                    <p><strong>Status:</strong> <span class="${statusColor}">${statusText}</span></p>
-                    <p><strong>Criado em:</strong> ${new Date(booking.createdAt).toLocaleString('pt-BR')}</p>
-                </div>
-            `;
-            
-            modal.classList.remove('hidden');
+            alert(`Detalhes do agendamento:\n\nCliente: ${booking.customerName}\nData: ${booking.date}\nHorário: ${booking.time}`);
         }
 
         function closeBookingModal() {
             document.getElementById('bookingModal').classList.add('hidden');
-            selectedBooking = null;
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString + 'T12:00:00');
-            return date.toLocaleDateString('pt-BR');
         }
 
         function sendWhatsAppFromModal() {
-            if (!selectedBooking) return;
-            
-            const message = `Olá ${selectedBooking.customerName}! Confirmando seu agendamento para ${formatDate(selectedBooking.date)} às ${selectedBooking.time}. Até lá! 😊`;
-            const whatsappUrl = `https://wa.me/${selectedBooking.customerPhone}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+            alert('Funcionalidade de WhatsApp em desenvolvimento');
         }
 
-        function exportBookings() {
-            alert('Funcionalidade de exportação em desenvolvimento!');
+        function cancelBookingFromModal() {
+            alert('Funcionalidade de cancelamento em desenvolvimento');
         }
 
-        function updateSchedule() {
-            alert('Funcionalidade em desenvolvimento!');
-        }
-
-        function updateWorkingDays() {
-            alert('Funcionalidade em desenvolvimento!');
-        }
-
-        async function cancelBookingFromModal() {
-            if (!selectedBooking) return;
-            
-            if (selectedBooking.status === 'cancelled') {
-                alert('Este agendamento já está cancelado!');
-                return;
-            }
-            
-            if (!confirm(`Tem certeza que deseja cancelar o agendamento de ${selectedBooking.customerName}?`)) {
-                return;
-            }
+        // INICIALIZAÇÃO PRINCIPAL
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Iniciando aplicação...');
             
             try {
-                const response = await fetch(`/api/bookings/${selectedBooking.bookingId}/cancel`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('✅ Agendamento cancelado com sucesso!');
-                    closeBookingModal();
-                    await loadBookings();
-                } else {
-                    throw new Error(result.error || 'Erro ao cancelar agendamento');
+                // 1. Verificar autenticação
+                const isAuthenticated = await checkAuth();
+                if (!isAuthenticated) {
+                    console.log('❌ Não autenticado');
+                    return;
                 }
                 
+                // 2. Carregar dados do barbeiro
+                const dataLoaded = await loadBarberData();
+                if (!dataLoaded) {
+                    console.log('❌ Não foi possível carregar dados do barbeiro');
+                    hideAuthOverlay();
+                    return;
+                }
+                
+                // 3. Esconder overlay de autenticação
+                hideAuthOverlay();
+                
+                // 4. Carregar dados adicionais
+                await loadBookings();
+                await loadBlockedDates();
+                
+                // 5. Gerar interface
+                generateCalendar();
+                updateStatistics();
+                
+                // 6. Configurar data padrão
+                const today = new Date().toISOString().split('T')[0];
+                const dateFilter = document.getElementById('dateFilter');
+                if (dateFilter) dateFilter.value = today;
+                
+                console.log('✅ Aplicação carregada com sucesso!');
+                
             } catch (error) {
-                console.error('Erro ao cancelar agendamento:', error);
-                alert('❌ Erro ao cancelar agendamento: ' + error.message);
+                console.error('❌ Erro durante inicialização:', error);
+                hideAuthOverlay();
+                alert('Erro ao carregar o painel. Por favor, tente novamente.');
             }
-        }
+        });
     </script>
 </body>
 </html>
