@@ -95,93 +95,24 @@ app.post('/api/auth/request-code', async (req, res) => {
         tempCodes.set(emailLower, tempData);
         console.log('💾 Código salvo temporariamente');
         
-     
-// ✅ FUNÇÃO CORRIGIDA PARA ENVIAR EMAIL
-async function sendLoginCode(email, code, businessName) {
-    try {
-        console.log('📧 Configurando transporter do Gmail...');
+        // Enviar email com código
+        await sendLoginCode(emailLower, code, barberData.businessName);
+        console.log('📧 Email enviado com sucesso');
         
-        // Verificar se credenciais estão configuradas
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.warn('⚠️ Credenciais de email não configuradas. Email será simulado.');
-            console.log(`📧 EMAIL SIMULADO para ${email}:`);
-            console.log(`Assunto: Código de acesso - ${businessName}`);
-            console.log(`Código: ${code}`);
-            console.log('---');
-            return; // ✅ IMPORTANTE: Return aqui para não tentar enviar email real
-        }
-        
-        // ✅ CORREÇÃO: createTransport (sem "r")
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+        res.json({
+            success: true,
+            message: 'Código enviado para seu email. Verifique sua caixa de entrada.'
         });
         
-        const mailOptions = {
-            from: `"Sistema de Agendamento" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: `🔐 Código de acesso - ${businessName}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #333; margin-bottom: 10px;">🔐 Código de Acesso</h1>
-                        <p style="color: #666; font-size: 16px;">
-                            Você solicitou acesso ao painel da <strong>${businessName}</strong>
-                        </p>
-                    </div>
-                    
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                padding: 30px; 
-                                text-align: center; 
-                                margin: 30px 0; 
-                                border-radius: 12px; 
-                                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                        <h1 style="color: white; 
-                                   font-size: 36px; 
-                                   margin: 0; 
-                                   letter-spacing: 8px; 
-                                   font-weight: bold;
-                                   text-shadow: 0 2px 4px rgba(0,0,0,0.3);">${code}</h1>
-                        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">
-                            Digite este código no painel
-                        </p>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #495057; margin-top: 0;">ℹ️ Informações importantes:</h3>
-                        <ul style="color: #6c757d; padding-left: 20px;">
-                            <li>Este código é válido por <strong>5 minutos</strong></li>
-                            <li>Use apenas no site oficial do sistema</li>
-                            <li>Não compartilhe este código com ninguém</li>
-                        </ul>
-                    </div>
-                    
-                    <div style="border-top: 1px solid #dee2e6; padding-top: 20px; margin-top: 30px;">
-                        <p style="color: #868e96; font-size: 12px; text-align: center; margin: 0;">
-                            Se você não solicitou este código, pode ignorar este email com segurança.
-                        </p>
-                    </div>
-                </div>
-            `
-        };
-        
-        console.log('📧 Enviando email...');
-        await transporter.sendMail(mailOptions);
-        console.log('✅ Email enviado com sucesso');
-        
     } catch (error) {
-        console.error('❌ Erro ao enviar email:', error.message);
-        
-        // ✅ IMPORTANTE: Em caso de erro, simular envio para não quebrar o fluxo
-        console.log(`📧 EMAIL SIMULADO (ERRO) para ${email}:`);
-        console.log(`Código: ${code}`);
-        console.log('---');
-        // ✅ NÃO fazer throw do erro - apenas log
+        console.error('❌ Erro ao enviar código:', error.message);
+        console.error('Stack:', error.stack);
+        res.status(500).json({
+            success: false,
+            error: 'Erro interno do servidor. Tente novamente.'
+        });
     }
-}
+});
 
 // Rota para verificar código
 app.post('/api/auth/verify-code', async (req, res) => {
@@ -360,7 +291,7 @@ async function sendLoginCode(email, code, businessName) {
             return;
         }
         
-        const transporter = nodemailer.createTransporter({
+        const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
